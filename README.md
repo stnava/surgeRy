@@ -1,25 +1,22 @@
-# subtyper
+# trainR
 
-[![CircleCI](https://circleci.com/gh/stnava/subtyper/tree/master.svg?style=svg)](https://circleci.com/gh/stnava/subtyper/tree/master)
+[![CircleCI](https://circleci.com/gh/stnava/trainR/tree/master.svg?style=svg)](https://circleci.com/gh/stnava/trainR/tree/master)
 
-documentation page [here](https://stnava.github.io/subtyper/)
+documentation page [here](https://stnava.github.io/trainR/)
 
-## Subtype and staging analyses in disease modeling
+## deep learning training
 
-Common tasks for subtyping include making measurements of data consistency,
-filtering for subjects with good/high quality data, training the
-subtyping algorithm, predicting the subtypes in new data and
-visualizing results, often over time.
-
-This package expects population-level data frames with longitudinal data.
+Common tasks for
 
 
 ## Installing
 
 The pre-release version of the package can be pulled from GitHub using the [devtools](https://github.com/r-lib/devtools) package:
 
+```r
     # install.packages("devtools")
-    devtools::install_github("stnava/subtyper", build_vignettes=TRUE)
+    devtools::install_github("stnava/trainR", build_vignettes=TRUE)
+```
 
 ## For developers
 

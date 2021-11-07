@@ -1,0 +1,24 @@
+---
+title: "trainR: basic example explained"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{trainR: basic example explained}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+set.seed( 000 )
+```
+
+# Overview of `trainR`
+
+trainR is a package for
+
+## Future work
+
+The package will evolve with the associated needs of related projects.

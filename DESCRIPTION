@@ -1,38 +1,25 @@
-Package: subtyper
+Package: trainR
 Type: Package
-Title: Subtyping, Filtering and Visualization for Longitudinal Population Data
-Description: We ingest dataframes describing populations that are followed
-    longitudinally, potentially with repeat measurements at each visit/timepoint.
-    Subtypes are identified after filtering the data frame for good quality.
-    Training the subtyping method can be performed after covariates adjustment.
-    Training is made explicit and its results are captured in an intuitive data
-    frame detailing results.  Inference or prediction of subtypes in new data
-    is facilitated by a single function call. The package provides intuitive
-    visualization that show how subtyped data varies by group over time.
+Title: Processing, filtering and data organization for deep learning training
+Description: Deep learning in medical imaging requires additional effort to
+  manage the size of the data.  We summarize these here.
 Version: 0.1.0
 Authors@R: c( person(c("Brian", "B."), "Avants", role=c("aut", "cre"), email="stnava@gmail.com") )
-URL: https://github.com/stnava/subtyper
-BugReports: https://github.com/stnava/subtyper/issues
+URL: https://github.com/stnava/trainR
+BugReports: https://github.com/stnava/trainR/issues
 License: GPL-3
 Depends:
     R (>= 3.0.0)
 Imports:
   ggplot2,
   dplyr,
-  ggthemes,
-  ggstatsplot,
-  ggbeeswarm,
-  wesanderson,
   Hmisc,
   plyr,
-  DDoutlier,
-  ClusterR,
-  NMF,
-  pheatmap,
-  gprofiler2,
   magrittr,
-  fastICA,
-  grDevices
+  grDevices,
+  tensorflow,
+  tfdatasets,
+  reticulate
 Suggests:
     covr,
     knitr,
