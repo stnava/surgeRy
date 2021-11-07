@@ -1,2 +1,2 @@
 library(testthat)
-test_check("subtyper")
+test_check("trainR")
