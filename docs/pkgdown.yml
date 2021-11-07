@@ -2,7 +2,6 @@ pandoc: 2.3.1
 pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
-  nalls_pd_genetics: nalls_pd_genetics.html
-  subtyper: subtyper.html
-last_built: 2021-09-29T15:16Z
+  trainR: trainR.html
+last_built: 2021-11-07T18:01Z
 

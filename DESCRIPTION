@@ -1,6 +1,6 @@
 Package: trainR
 Type: Package
-Title: Processing, filtering and data organization for deep learning training
+Title: Processing, Filtering and Data Organization for Deep Learning Training
 Description: Deep learning in medical imaging requires additional effort to
   manage the size of the data.  We summarize these here.
 Version: 0.1.0
@@ -11,6 +11,9 @@ License: GPL-3
 Depends:
     R (>= 3.0.0)
 Imports:
+  ANTsRCore,
+  ANTsR,
+  ANTsRNet,
   ggplot2,
   dplyr,
   Hmisc,
@@ -19,7 +22,9 @@ Imports:
   grDevices,
   tensorflow,
   tfdatasets,
-  reticulate
+  reticulate,
+  R.utils,
+  patchMatchR
 Suggests:
     covr,
     knitr,

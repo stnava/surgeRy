@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Changelog • trainR</title>
+<title>Generate augmentation data with on disk storage — generateDiskData • trainR</title>
 
 
 <!-- jquery -->
@@ -39,7 +39,8 @@
 
 
 
-<meta property="og:title" content="Changelog" />
+<meta property="og:title" content="Generate augmentation data with on disk storage — generateDiskData" />
+<meta property="og:description" content="Generate augmentation data with on disk storage" />
 
 
 
@@ -58,7 +59,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-news">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -113,25 +114,89 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-      <h1 data-toc-skip>Changelog <small></small></h1>
-      <small>Source: <a href='https://github.com/stnava/trainR/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
+    <h1>Generate augmentation data with on disk storage</h1>
+    <small class="dont-index">Source: <a href='https://github.com/stnava/trainR/blob/master/R/trainR.R'><code>R/trainR.R</code></a></small>
+    <div class="hidden name"><code>generateDiskData.Rd</code></div>
     </div>
 
-    <div id="subtyper-0-1-0" class="section level2">
-<h2 class="hasAnchor">
-<a href="#subtyper-0-1-0" class="anchor"></a>subtyper 0.1.0</h2>
-<ul>
-<li>Initial addition of functions and tests</li>
-</ul>
-</div>
-  </div>
+    <div class="ref-description">
+    <p>Generate augmentation data with on disk storage</p>
+    </div>
 
+    <pre class="usage"><span class='fu'>generateDiskData</span><span class='op'>(</span>
+  <span class='va'>inputImageList</span>,
+  <span class='va'>segmentationImageList</span>,
+  <span class='va'>segmentationNumbers</span>,
+  <span class='va'>selector</span>,
+  addCoordConv <span class='op'>=</span> <span class='fl'>0</span>,
+  segmentationsArePoints <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  <span class='va'>maskIndex</span>,
+  <span class='va'>numpynames</span>,
+  <span class='va'>...</span>
+<span class='op'>)</span></pre>
+
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>inputImageList</th>
+      <td><p>list of lists of input images to warp.  The internal
+list sets contains one or more images (per subject) which are
+assumed to be mutually aligned.  The outer list contains
+multiple subject lists which are randomly sampled to produce
+output image list.</p></td>
+    </tr>
+    <tr>
+      <th>segmentationImageList</th>
+      <td><p>of segmentation images corresponding to the input image list.</p></td>
+    </tr>
+    <tr>
+      <th>segmentationNumbers</th>
+      <td><p>the integer list of values in the segmentation to model</p></td>
+    </tr>
+    <tr>
+      <th>selector</th>
+      <td><p>subsets the inputImageList and segmentationImageList (eg to define train test splits)</p></td>
+    </tr>
+    <tr>
+      <th>addCoordConv</th>
+      <td><p>boolean - generates another array with CoordConv data</p></td>
+    </tr>
+    <tr>
+      <th>segmentationsArePoints</th>
+      <td><p>boolean - converts segmentations to points</p></td>
+    </tr>
+    <tr>
+      <th>maskIndex</th>
+      <td><p>the entry within the list of lists that contains a mask</p></td>
+    </tr>
+    <tr>
+      <th>numpynames</th>
+      <td><p>the names of the numpy on disk files should contain something with
+the string mask if using maskIndex and something with the word coordconv if using CC</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>additional arguments passed to the ANTsRNet function dataAugmentation</p></td>
+    </tr>
+    </table>
+
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>list of array</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Avants BB</p>
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='va'>mydf</span> <span class='op'>=</span> <span class='cn'>NULL</span>
+</div></pre>
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
       <h2 data-toc-skip>Contents</h2>
     </nav>
   </div>
-
 </div>
 
 

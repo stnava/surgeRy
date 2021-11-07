@@ -4,17 +4,44 @@
 \alias{generateDiskData}
 \title{Generate augmentation data with on disk storage}
 \usage{
-generateDiskData()
+generateDiskData(
+  inputImageList,
+  segmentationImageList,
+  segmentationNumbers,
+  selector,
+  addCoordConv = 0,
+  segmentationsArePoints = FALSE,
+  maskIndex,
+  numpynames,
+  ...
+)
 }
 \arguments{
-\item{mxdfin}{Input data frame with repeated measurements and a grouped time variable}
+\item{inputImageList}{list of lists of input images to warp.  The internal
+list sets contains one or more images (per subject) which are
+assumed to be mutually aligned.  The outer list contains
+multiple subject lists which are randomly sampled to produce
+output image list.}
 
-\item{visitvar}{variable name for the visit column}
+\item{segmentationImageList}{of segmentation images corresponding to the input image list.}
 
-\item{visitselect}{the desired visits}
+\item{segmentationNumbers}{the integer list of values in the segmentation to model}
+
+\item{selector}{subsets the inputImageList and segmentationImageList (eg to define train test splits)}
+
+\item{addCoordConv}{boolean - generates another array with CoordConv data}
+
+\item{segmentationsArePoints}{boolean - converts segmentations to points}
+
+\item{maskIndex}{the entry within the list of lists that contains a mask}
+
+\item{numpynames}{the names of the numpy on disk files should contain something with
+the string mask if using maskIndex and something with the word coordconv if using CC}
+
+\item{...}{additional arguments passed to the ANTsRNet function dataAugmentation}
 }
 \value{
-data frame
+list of array
 }
 \description{
 Generate augmentation data with on disk storage
