@@ -1,0 +1,13 @@
+*.pyc
+*.Rcheck/
+*.orig
+vignettes/figure/*
+subtyper*.tar.gz
+.DS_Store
+Rd2.pdf
+assets/
+inst/doc/*.html
+*.log
+.Rproj.user
+*.Rproj
+inst/doc
