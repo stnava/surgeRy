@@ -6,6 +6,29 @@
 }
 
 
+#' Choose files by modification date
+#'
+#' @param fileDataFrame a dataframe containing files required for training some model
+#' @return the recommended filenames to read right now
+#' @author Avants BB
+#' @examples
+#' mydf = NULL
+#' @export
+chooseTrainingFilesToRead <- function( fileDataFrame ) {
+  # take the most recent of all file mod times for all rows
+  extime = Sys.time()
+  mytimes = rep( extime, nrow( fileDataFrame ) )
+  for ( i in 1:nrow(fileDataFrame) ) {
+    localtimes = rep( extime, ncol(fileDataFrame) )
+    for ( j in 1:ncol(fileDataFrame) ) {
+      localtimes[j] = R.utils::lastModified( as.character( fileDataFrame[i,j] ) )
+    }
+    mytimes[ i ] = max( localtimes )
+  }
+  myindex = rev(order(mytimes))[2]
+  return( fileDataFrame[myindex,] )
+}
+
 
 #' Read augmentation data from on disk storage
 #'
