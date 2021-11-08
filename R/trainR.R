@@ -52,8 +52,11 @@ loadNPData <- function( numpynames ) {
   doCC = length( ccnameindex ) > 0
   doHM = length( heatmapnameindex ) > 0
   outlist = list()
-  for ( x in 1:length( numpynames ) )
+  for ( x in 1:length( numpynames ) ) {
+    if ( ! file.exists( numpynames[ x ] ) )
+      stop(paste(  numpynames[ x ],"does not exist on disk" ) )
     outlist[[length(outlist)+1]] = np$load( numpynames[ x ] )
+    }
   return( outlist )
 }
 
