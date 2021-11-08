@@ -99,7 +99,7 @@ generateDiskData  <- function(
   doMask = FALSE
   doCC = FALSE
   if ( addCoordConv > 0  & ! missing( maskIndex ) )
-    stopifnot( length( numpynames > 3 ) )
+    stopifnot( length( numpynames ) > 3 )
   if ( missing( sdAffine ) ) sdAffine = 0.3
   if ( missing( noiseParameters ) ) noiseParameters = c( 0, 0.01 )
   if ( missing( sdSimulatedBiasField ) ) sdSimulatedBiasField = 0.001
