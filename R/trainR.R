@@ -132,7 +132,7 @@ generateDiskData  <- function(
   if ( ! segmentationsArePoints ) {
     Y = array( dim = c( numberOfSimulations, idim, nClasses ) )
   } else {
-    Y = array( dim = c( numberOfSimulations, nClasses, idim ) )
+    Y = array( dim = c( numberOfSimulations, nClasses, myimgdim ) )
   }
   if (! missing( maskIndex ) ) {
     doMask = TRUE
@@ -150,6 +150,7 @@ generateDiskData  <- function(
       stop( "numpynames must have a name containing the string coordconv" )
     ccnameindex = grep("coordconv",numpynames)
     }
+
   data <- dataAugmentation(
     inputImageList[selector],
     segmentationImageList[selector],
@@ -192,7 +193,7 @@ generateDiskData  <- function(
             segmentationNumbers[j], segmentationNumbers[j]  )
           mypt = getCentroids( temp, clustparam=0  )
           if ( length(mypt) == 0 ) mypt = rep( NA, myimgdim )
-          Y[k, j, ] = mypt
+          Y[k, j, ] = mypt[1:myimgdim]
           }
         }
     }
