@@ -132,7 +132,14 @@
   segmentationsArePoints <span class='op'>=</span> <span class='cn'>FALSE</span>,
   <span class='va'>maskIndex</span>,
   <span class='va'>numpynames</span>,
-  <span class='va'>...</span>
+  numberOfSimulations <span class='op'>=</span> <span class='fl'>16</span>,
+  referenceImage <span class='op'>=</span> <span class='cn'>NULL</span>,
+  transformType <span class='op'>=</span> <span class='st'>"rigid"</span>,
+  noiseModel <span class='op'>=</span> <span class='st'>"additivegaussian"</span>,
+  noiseParameters <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>0.002</span><span class='op'>)</span>,
+  sdSimulatedBiasField <span class='op'>=</span> <span class='fl'>5e-04</span>,
+  sdHistogramWarping <span class='op'>=</span> <span class='fl'>5e-04</span>,
+  sdAffine <span class='op'>=</span> <span class='fl'>0.2</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -176,8 +183,49 @@ output image list.</p></td>
 the string mask if using maskIndex and something with the word coordconv if using CC</p></td>
     </tr>
     <tr>
-      <th>...</th>
-      <td><p>additional arguments passed to the ANTsRNet function dataAugmentation</p></td>
+      <th>numberOfSimulations</th>
+      <td><p>number of output images.  Default = 10.</p></td>
+    </tr>
+    <tr>
+      <th>referenceImage</th>
+      <td><p>defines the spatial domain for all output images.  If
+the input images do not match the spatial domain of the reference image, we
+internally resample the target to the reference image.  This could have
+unexpected consequences.  Resampling to the reference domain is performed by
+testing using <code>antsImagePhysicalSpaceConsistency</code> then calling
+<code>resampleImageToTarget</code> upon failure.</p></td>
+    </tr>
+    <tr>
+      <th>transformType</th>
+      <td><p>one of the following options
+<code><a href='https://rdrr.io/r/base/c.html'>c( "translation", "rigid", "scaleShear", "affine"," deformation" ,
+  "affineAndDeformation" )</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>noiseModel</th>
+      <td><p>one of the following options
+<code><a href='https://rdrr.io/r/base/c.html'>c( "additivegaussian", "saltandpepper", "shot", "speckle" )</a></code></p></td>
+    </tr>
+    <tr>
+      <th>noiseParameters</th>
+      <td><p>'additivegaussian': <code><a href='https://rdrr.io/r/base/c.html'>c( mean, standardDeviation )</a></code>,
+'saltandpepper': <code><a href='https://rdrr.io/r/base/c.html'>c( probability, saltValue, pepperValue) </a></code>, 'shot':
+scale, 'speckle': standardDeviation.  Note that the standard deviation,
+scale, and probability values are <em>max</em> values and are randomly selected
+in the range <code>[0, noise_parameter]</code>.  Also, the "mean", "saltValue" and
+pepperValue" are assumed to be in the intensity normalized range of <code>[0, 1]</code>.</p></td>
+    </tr>
+    <tr>
+      <th>sdSimulatedBiasField</th>
+      <td><p>Characterize the standard deviation of the amplitude.</p></td>
+    </tr>
+    <tr>
+      <th>sdHistogramWarping</th>
+      <td><p>Determines the strength of the bias field.</p></td>
+    </tr>
+    <tr>
+      <th>sdAffine</th>
+      <td><p>Determines the amount of transformation based change</p></td>
     </tr>
     </table>
 
@@ -202,7 +250,7 @@ the string mask if using maskIndex and something with the word coordconv if usin
 
       <footer>
       <div class="copyright">
-  <p>Developed by Brian B. Avants.</p>
+  <p>Developed by .</p>
 </div>
 
 <div class="pkgdown">

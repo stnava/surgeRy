@@ -13,7 +13,14 @@ generateDiskData(
   segmentationsArePoints = FALSE,
   maskIndex,
   numpynames,
-  ...
+  numberOfSimulations = 16,
+  referenceImage = NULL,
+  transformType = "rigid",
+  noiseModel = "additivegaussian",
+  noiseParameters = c(0, 0.002),
+  sdSimulatedBiasField = 5e-04,
+  sdHistogramWarping = 5e-04,
+  sdAffine = 0.2
 )
 }
 \arguments{
@@ -38,7 +45,34 @@ output image list.}
 \item{numpynames}{the names of the numpy on disk files should contain something with
 the string mask if using maskIndex and something with the word coordconv if using CC}
 
-\item{...}{additional arguments passed to the ANTsRNet function dataAugmentation}
+\item{numberOfSimulations}{number of output images.  Default = 10.}
+
+\item{referenceImage}{defines the spatial domain for all output images.  If
+the input images do not match the spatial domain of the reference image, we
+internally resample the target to the reference image.  This could have
+unexpected consequences.  Resampling to the reference domain is performed by
+testing using \code{antsImagePhysicalSpaceConsistency} then calling
+\code{resampleImageToTarget} upon failure.}
+
+\item{transformType}{one of the following options
+\code{c( "translation", "rigid", "scaleShear", "affine"," deformation" ,
+  "affineAndDeformation" )}.}
+
+\item{noiseModel}{one of the following options
+\code{c( "additivegaussian", "saltandpepper", "shot", "speckle" )}}
+
+\item{noiseParameters}{'additivegaussian': \code{c( mean, standardDeviation )},
+'saltandpepper': \code{c( probability, saltValue, pepperValue) }, 'shot':
+scale, 'speckle': standardDeviation.  Note that the standard deviation,
+scale, and probability values are \emph{max} values and are randomly selected
+in the range \code{[0, noise_parameter]}.  Also, the "mean", "saltValue" and
+pepperValue" are assumed to be in the intensity normalized range of \code{[0, 1]}.}
+
+\item{sdSimulatedBiasField}{Characterize the standard deviation of the amplitude.}
+
+\item{sdHistogramWarping}{Determines the strength of the bias field.}
+
+\item{sdAffine}{Determines the amount of transformation based change}
 }
 \value{
 list of array

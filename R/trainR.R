@@ -68,7 +68,27 @@ loadNPData <- function( numpynames ) {
 #' @param maskIndex the entry within the list of lists that contains a mask
 #' @param numpynames the names of the numpy on disk files should contain something with
 #' the string mask if using maskIndex and something with the word coordconv if using CC
-#' @param ... additional arguments passed to the ANTsRNet function dataAugmentation
+#' @param numberOfSimulations number of output images.  Default = 10.
+#' @param referenceImage defines the spatial domain for all output images.  If
+#' the input images do not match the spatial domain of the reference image, we
+#' internally resample the target to the reference image.  This could have
+#' unexpected consequences.  Resampling to the reference domain is performed by
+#' testing using \code{antsImagePhysicalSpaceConsistency} then calling
+#' \code{resampleImageToTarget} upon failure.
+#' @param transformType one of the following options
+#' \code{c( "translation", "rigid", "scaleShear", "affine"," deformation" ,
+#'   "affineAndDeformation" )}.
+#' @param noiseModel one of the following options
+#'   \code{c( "additivegaussian", "saltandpepper", "shot", "speckle" )}
+#' @param noiseParameters 'additivegaussian': \code{c( mean, standardDeviation )},
+#'   'saltandpepper': \code{c( probability, saltValue, pepperValue) }, 'shot':
+#'    scale, 'speckle': standardDeviation.  Note that the standard deviation,
+#'    scale, and probability values are *max* values and are randomly selected
+#'    in the range \code{[0, noise_parameter]}.  Also, the "mean", "saltValue" and
+#'    pepperValue" are assumed to be in the intensity normalized range of \code{[0, 1]}.
+#' @param sdSimulatedBiasField Characterize the standard deviation of the amplitude.
+#' @param sdHistogramWarping Determines the strength of the bias field.
+#' @param sdAffine Determines the amount of transformation based change
 #'
 #' @return list of array
 #' @author Avants BB
@@ -89,7 +109,14 @@ generateDiskData  <- function(
   segmentationsArePoints = FALSE,
   maskIndex,
   numpynames,
-  ... ) {
+  numberOfSimulations = 16,
+  referenceImage = NULL,
+  transformType = 'rigid',
+  noiseModel = 'additivegaussian',
+  noiseParameters = c( 0.0, 0.002 ),
+  sdSimulatedBiasField = 0.0005,
+  sdHistogramWarping = 0.0005,
+  sdAffine = 0.2  ) {
   nClasses = length( segmentationNumbers )
   overindices = 1:length(inputImageList[[1]])
   if (  ! missing( maskIndex ) ) overindices = overindices[ -maskIndex ]
@@ -100,12 +127,6 @@ generateDiskData  <- function(
   doCC = FALSE
   if ( addCoordConv > 0  & ! missing( maskIndex ) )
     stopifnot( length( numpynames ) > 3 )
-  if ( missing( sdAffine ) ) sdAffine = 0.3
-  if ( missing( noiseParameters ) ) noiseParameters = c( 0, 0.01 )
-  if ( missing( sdSimulatedBiasField ) ) sdSimulatedBiasField = 0.001
-  if ( missing( sdHistogramWarping ) ) sdHistogramWarping = 0.001
-  if ( missing( transformType ) ) transformType = 'rigid'
-  if ( missing( numberOfSimulations ) ) numberOfSimulations = 128
 
   X = array( dim = c( numberOfSimulations, idim, length(overindices) ) )
   if ( ! segmentationsArePoints ) {
@@ -138,6 +159,7 @@ generateDiskData  <- function(
     noiseParameters = noiseParameters,
     sdSimulatedBiasField = sdSimulatedBiasField,
     sdHistogramWarping = sdHistogramWarping,
+    referenceImage = referenceImage,
     verbose = FALSE )
   for ( k in 1:length(data$simulatedImages) ) {
     if ( addCoordConv > 0 ) {
