@@ -42,6 +42,8 @@ uses the latter approach, one should encode each point by a unique label.
 
 ## Setting up the data
 
+**Run on both threads when setting up**
+
 Environment variables control multi-threading for CPU in ANTs and tensorflow.
 See below for how to set these at the beginning on an experiment.  We set
 the number of threads to 12 below.
@@ -54,6 +56,8 @@ Sys.setenv("ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS"=12)
 
 
 See the code below for how to assemble the images for augmentation.
+
+**Run on both threads when setting up**
 
 ```{r setupX,echo=TRUE,eval=FALSE}
 # record the GPU
@@ -69,27 +73,30 @@ library( trainR )
 np <- import("numpy")
 mytype = "float32"
 nlayers = 4   # for unet
-downsam = 2   # downsamples images
+downsam = 4   # downsamples images
 # collect your images - a list of lists - multiple entries in each list are fine
-rids <- function( x, downsammer=2 ) {
+rids <- function( x, downsammer=4 ) {
   img = ri( x )
   resampleImage( img, dim(img)/downsammer, useVoxels=TRUE )
 }
 upperhalf = rids( 1 ) * 0 + 1 # this just gives us more segmentation labels
-upperhalf[1:128,1:64] = 2
+upperhalf[1:64,1:32] = 2
 ilist = list(
   list( rids( 1 ), getMask( rids( 1 ) ) ),
   list( rids( 2 ), getMask( rids( 2 ) ) ),
-  list( rids( 3 ), getMask( rids( 3 ) ) ) )
-slist = list(
-  thresholdImage( ilist[[1]][[1]], "Otsu", 3 ) * upperhalf,
-  thresholdImage( ilist[[2]][[1]], "Otsu", 3 ) * upperhalf,
-  thresholdImage( ilist[[3]][[1]], "Otsu", 3 ) * upperhalf
-)
+  list( rids( 3 ), getMask( rids( 3 ) ) ),
+  list( rids( 4 ), getMask( rids( 4 ) ) ),
+  list( rids( 5 ), getMask( rids( 5 ) ) ) )
+
+slist = list()
+for ( k in 1:length( ilist ) )
+  slist[[k]] = thresholdImage( ilist[[k]][[1]], "Otsu", 3 ) * upperhalf
 ```
 
 Here are definitions for some variables important for training: the numbers
 defining the segmentation labels and which images are for training and testing.
+
+**Run on both threads when setting up**
 
 ```{r setup3,echo=TRUE,eval=FALSE}
 # identify the number of segmentation classes
@@ -109,6 +116,8 @@ data we will be generating.  In this case, we will generate augmented images,
 the associated masks, the points, coord conv output and a heatmap.  These
 all derive from the image lists we defined above.  This stuff will be run
 on CPU separately from the training loop.
+
+**Run on CPU thread when setting up**
 
 ```{r disk,echo=TRUE,eval=FALSE}
 nFiles = 5
@@ -140,6 +149,8 @@ results.   We will show an example that looks at some parameter variations below
 The call below will write a test file to numpy.  We just write one in this
 case as we keep it constant during training.  Write as many as you want for
 your application
+
+**Run on CPU thread when setting up**
 
 ```{r augment,echo=TRUE,eval=FALSE}
 testfilename = as.character(trainTestFileNames[1,grep("test",colnames(trainTestFileNames))])
@@ -173,6 +184,8 @@ We would typically run something like the code below in a continuous loop on
 a CPU thread separate from the GPU training loop.  In practice, you may keep
 the parameters the same across train and test or set minimal augmentation
 parameters for test data.
+
+**Run on CPU thread when setting up**
 
 ```{r augmenttrain,echo=TRUE,eval=FALSE}
 while( TRUE ) {
@@ -211,6 +224,8 @@ publication will explain the theory associated with this package.
 Below is the default set up for unet-based lanmdark prediction given
 the above augmentation choices.
 
+**Run on GPU thread when setting up**
+
 ```{r unetsetup,echo=TRUE,eval=FALSE}
 # set up the network - all parameters below could be optimized for the application
 unet = createUnetModel2D(
@@ -245,8 +260,10 @@ Some experimentation may be needed to get the timing correct.  You want to
 balance the time it takes to augment versus the time it takes to train
 through a batch.
 
+**Run on GPU thread when setting up**
+
 ```{r training,echo=TRUE,eval=FALSE}
-trtefns = read.csv( "numpy/LMtrainttestfiles.csv" )
+trtefns = read.csv( "numpy/LMtrainttestfiles.csv" ) # critical - same file name
 trnnames = colnames(trtefns)[grep("train", colnames(trtefns) )]
 tstnames = colnames(trtefns)[grep("test", colnames(trtefns) )]
 loadfirst = chooseTrainingFilesToRead( trtefns[,trnnames] )
@@ -257,6 +274,8 @@ Xte = trainR::loadNPData( trtefns[1,tstnames] )
 
 
 ## set up the training history data frame
+
+**Run on GPU thread when setting up**
 
 ```{r seghistory,echo=TRUE,eval=FALSE}
 mydf = data.frame()
@@ -271,11 +290,13 @@ below is a "standard" tensorflow training loop with some alterations
 that make some efficiencies / choices a little more explicit but still clear.
 at least, that is what's intended.
 
-```{r inference,echo=TRUE,eval=FALSE}
-ptWeight = tf$cast( 0.05, mytype )
+**Run on GPU thread when setting up**
+
+```{r training,echo=TRUE,eval=FALSE}
+ptWeight = tf$cast( 0.005, mytype )
 # Training loop parameters -----------------------------------------------------
-num_epochs <- 50000
-optimizerE <- tf$keras$optimizers$Adam(1.e-5)
+num_epochs <- 5000
+optimizerE <- tf$keras$optimizers$Adam(5.e-6)
 batchsize = 2
 for (epoch in epoch:num_epochs ) {
   if ( (epoch %% round(mybs/batchsize) ) == 0 & epoch > 1  ) {
@@ -329,6 +350,8 @@ for (epoch in epoch:num_epochs ) {
 
 take a look at the training-test convergence curves.
 
+**Run on CPU thread**
+
 ```{r traintestcurves,eval=FALSE,echo=TRUE}
 mydfnona = mydf[ !is.na( mydf$test_loss),  ]
 plot( ts( mydfnona ) )
@@ -339,6 +362,8 @@ plot( ts( mydfnona ) )
 Inference follows the same patterns as above but there are many ways that
 one can implement it.  Please implement inference on your own.
 
+**Run on CPU thread when done**
+
 ```{r inferenceB,echo=FALSE}
 # basically the same as training and augmentation - please treat as an exercise
 ```
@@ -347,4 +372,5 @@ one can implement it.  Please implement inference on your own.
 
 The package will evolve with the associated needs of related projects.
 NOTE: this example is really very trivial and is not meant to "work" on a
-real problem.
+real problem.  However, it has been tested in very close form on real
+non-trivial problems with very similar parameters.
