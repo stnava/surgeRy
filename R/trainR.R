@@ -137,7 +137,7 @@ generateDiskData  <- function(
   segmentationImageList,
   segmentationNumbers,
   selector,
-  addCoordConv=0,
+  addCoordConv = TRUE,
   segmentationsArePoints = FALSE,
   maskIndex,
   smoothHeatMaps = 0,
@@ -158,7 +158,7 @@ generateDiskData  <- function(
   myimgdim = length( idim )
   doMask = FALSE
   doCC = FALSE
-  if ( addCoordConv > 0  & ! missing( maskIndex ) )
+  if ( addCoordConv  & ! missing( maskIndex ) )
     stopifnot( length( numpynames ) > 3 )
 
   X = array( dim = c( numberOfSimulations, idim, length(overindices) ) )
@@ -181,7 +181,7 @@ generateDiskData  <- function(
       stop( "numpynames must have a name containing the string mask" )
     masknameindex = grep("mask",numpynames)
     }
-  if ( addCoordConv > 0 ) {
+  if ( addCoordConv ) {
     doCC = TRUE
     Xcc = array( dim = c( numberOfSimulations, idim, length(idim) ) )
     stopifnot( length( numpynames ) > 2 )
@@ -203,11 +203,11 @@ generateDiskData  <- function(
     referenceImage = referenceImage,
     verbose = FALSE )
   for ( k in 1:length(data$simulatedImages) ) {
-    if ( addCoordConv > 0 ) {
+    if ( addCoordConv ) {
       myccLocal = patchMatchR::coordinateImages( data$simulatedImages[[k]][[1]] * 0 + 1 )
       for ( jj in 1:myimgdim ) {
-        if ( myimgdim == 2 ) Xcc[k,,,jj] = as.array( myccLocal[[jj]] )/addCoordConv
-        if ( myimgdim == 3 ) Xcc[k,,,,jj] = as.array( myccLocal[[jj]] )/addCoordConv
+        if ( myimgdim == 2 ) Xcc[k,,,jj] = as.array( myccLocal[[jj]] )
+        if ( myimgdim == 3 ) Xcc[k,,,,jj] = as.array( myccLocal[[jj]] )
       }
     }
     if ( ! missing( maskIndex ) ) {
