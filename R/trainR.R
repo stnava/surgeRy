@@ -9,12 +9,15 @@
 #' Choose files by modification date
 #'
 #' @param fileDataFrame a dataframe containing files required for training some model
+#' @param random boolean that will return a random choice of files
+#' @param notFirst boolean that will return a random choice of files instead
+#' though not the most recently modified
 #' @return the recommended filenames to read right now
 #' @author Avants BB
 #' @examples
 #' mydf = NULL
 #' @export
-chooseTrainingFilesToRead <- function( fileDataFrame ) {
+chooseTrainingFilesToRead <- function( fileDataFrame, random=FALSE, notFirst=FALSE ) {
   # take the most recent of all file mod times for all rows
   extime = Sys.time()
   mytimes = rep( extime, nrow( fileDataFrame ) )
@@ -27,7 +30,13 @@ chooseTrainingFilesToRead <- function( fileDataFrame ) {
     }
     mytimes[ i ] = max( localtimes )
   }
-  myindex = rev(order(mytimes))[2]
+  indices = rev(order(mytimes))
+  myindex = indices[2] # default choice
+  if ( notFirst ) {
+    return( fileDataFrame[ sample( indices[-1], 1 ),] )
+  } else if ( random ) {
+    return( fileDataFrame[ sample( indices, 1 ),] )
+  }
   return( fileDataFrame[myindex,] )
 }
 

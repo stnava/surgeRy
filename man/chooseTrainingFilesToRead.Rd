@@ -4,10 +4,15 @@
 \alias{chooseTrainingFilesToRead}
 \title{Choose files by modification date}
 \usage{
-chooseTrainingFilesToRead(fileDataFrame)
+chooseTrainingFilesToRead(fileDataFrame, random = FALSE, notFirst = FALSE)
 }
 \arguments{
 \item{fileDataFrame}{a dataframe containing files required for training some model}
+
+\item{random}{boolean that will return a random choice of files}
+
+\item{notFirst}{boolean that will return a random choice of files instead
+though not the most recently modified}
 }
 \value{
 the recommended filenames to read right now

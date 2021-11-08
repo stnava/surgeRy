@@ -123,7 +123,7 @@
     <p>Choose files by modification date</p>
     </div>
 
-    <pre class="usage"><span class='fu'>chooseTrainingFilesToRead</span><span class='op'>(</span><span class='va'>fileDataFrame</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>chooseTrainingFilesToRead</span><span class='op'>(</span><span class='va'>fileDataFrame</span>, random <span class='op'>=</span> <span class='cn'>FALSE</span>, notFirst <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -131,6 +131,15 @@
     <tr>
       <th>fileDataFrame</th>
       <td><p>a dataframe containing files required for training some model</p></td>
+    </tr>
+    <tr>
+      <th>random</th>
+      <td><p>boolean that will return a random choice of files</p></td>
+    </tr>
+    <tr>
+      <th>notFirst</th>
+      <td><p>boolean that will return a random choice of files instead
+though not the most recently modified</p></td>
     </tr>
     </table>
 
