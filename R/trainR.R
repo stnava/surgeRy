@@ -21,7 +21,9 @@ chooseTrainingFilesToRead <- function( fileDataFrame ) {
   for ( i in 1:nrow(fileDataFrame) ) {
     localtimes = rep( extime, ncol(fileDataFrame) )
     for ( j in 1:ncol(fileDataFrame) ) {
-      localtimes[j] = R.utils::lastModified( as.character( fileDataFrame[i,j] ) )
+      myfn = as.character( fileDataFrame[i,j] )
+      stopifnot( file.exists( myfn ) )
+      localtimes[j] = R.utils::lastModified( myfn )
     }
     mytimes[ i ] = max( localtimes )
   }
