@@ -9,7 +9,7 @@ generateDiskData(
   segmentationImageList,
   segmentationNumbers,
   selector,
-  addCoordConv = 0,
+  addCoordConv = TRUE,
   segmentationsArePoints = FALSE,
   maskIndex,
   smoothHeatMaps = 0,

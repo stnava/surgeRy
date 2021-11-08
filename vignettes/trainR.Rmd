@@ -55,7 +55,7 @@ Sys.setenv("ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS"=12)
 
 See the code below for how to assemble the images for augmentation.
 
-```{r setup2,echo=TRUE,eval=FALSE}
+```{r setupX,echo=TRUE,eval=FALSE}
 # record the GPU
 gpuid = Sys.getenv(x = "CUDA_VISIBLE_DEVICES")
 library( ANTsR )
@@ -325,16 +325,26 @@ for (epoch in epoch:num_epochs ) {
   }
 ```
 
+## monitoring training progess
+
+take a look at the training-test convergence curves.
+
+```{r traintestcurves,eval=FALSE,echo=TRUE}
+mydfnona = mydf[ !is.na( mydf$test_loss),  ]
+plot( ts( mydfnona ) )
+```
 
 ## Inference
 
 Inference follows the same patterns as above but there are many ways that
 one can implement it.  Please implement inference on your own.
 
-```{r inference,echo=FALSE}
+```{r inferenceB,echo=FALSE}
 # basically the same as training and augmentation - please treat as an exercise
 ```
 
 ## Future work
 
 The package will evolve with the associated needs of related projects.
+NOTE: this example is really very trivial and is not meant to "work" on a
+real problem.
