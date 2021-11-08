@@ -6,7 +6,7 @@ Description: Deep learning in medical imaging requires additional effort to
 Version: 0.1.0
 Authors@R: c(
     person(c("Brian", "B"), "Avants", role = c("aut", "cre"), email = "stnava@gmail.com", comment = c(ORCID = "0000-0002-4212-3362")),
-    person(c("Nicholas", "J"), "Tustison", role = c("aut"), email = "ntustison@gmail.com", comment = c(ORCID = "0000-0001-9418-5103")),
+    person(c("Nicholas", "J"), "Tustison", role = c("aut"), email = "ntustison@gmail.com", comment = c(ORCID = "0000-0001-9418-5103"))
     )
 URL: https://github.com/stnava/trainR
 BugReports: https://github.com/stnava/trainR/issues
