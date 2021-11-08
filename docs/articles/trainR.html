@@ -99,12 +99,14 @@
 <div id="setting-up-the-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#setting-up-the-data" class="anchor"></a>Setting up the data</h2>
+<p><strong>Run on both threads when setting up</strong></p>
 <p>Environment variables control multi-threading for CPU in ANTs and tensorflow. See below for how to set these at the beginning on an experiment. We set the number of threads to 12 below.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html">Sys.setenv</a></span><span class="op">(</span><span class="st">"TF_NUM_INTEROP_THREADS"</span><span class="op">=</span><span class="fl">12</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html">Sys.setenv</a></span><span class="op">(</span><span class="st">"TF_NUM_INTRAOP_THREADS"</span><span class="op">=</span><span class="fl">12</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html">Sys.setenv</a></span><span class="op">(</span><span class="st">"ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS"</span><span class="op">=</span><span class="fl">12</span><span class="op">)</span></code></pre></div>
 <p>See the code below for how to assemble the images for augmentation.</p>
+<p><strong>Run on both threads when setting up</strong></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># record the GPU</span>
 <span class="va">gpuid</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html">Sys.getenv</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"CUDA_VISIBLE_DEVICES"</span><span class="op">)</span>
@@ -119,34 +121,37 @@
 <span class="va">np</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/import.html">import</a></span><span class="op">(</span><span class="st">"numpy"</span><span class="op">)</span>
 <span class="va">mytype</span> <span class="op">=</span> <span class="st">"float32"</span>
 <span class="va">nlayers</span> <span class="op">=</span> <span class="fl">4</span>   <span class="co"># for unet</span>
-<span class="va">downsam</span> <span class="op">=</span> <span class="fl">2</span>   <span class="co"># downsamples images</span>
+<span class="va">downsam</span> <span class="op">=</span> <span class="fl">4</span>   <span class="co"># downsamples images</span>
 <span class="co"># collect your images - a list of lists - multiple entries in each list are fine</span>
-<span class="va">rids</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span> <span class="va">x</span>, <span class="va">downsammer</span><span class="op">=</span><span class="fl">2</span> <span class="op">)</span> <span class="op">{</span>
+<span class="va">rids</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span> <span class="va">x</span>, <span class="va">downsammer</span><span class="op">=</span><span class="fl">4</span> <span class="op">)</span> <span class="op">{</span>
   <span class="va">img</span> <span class="op">=</span> <span class="fu">ri</span><span class="op">(</span> <span class="va">x</span> <span class="op">)</span>
   <span class="fu">resampleImage</span><span class="op">(</span> <span class="va">img</span>, <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">img</span><span class="op">)</span><span class="op">/</span><span class="va">downsammer</span>, useVoxels<span class="op">=</span><span class="cn">TRUE</span> <span class="op">)</span>
 <span class="op">}</span>
 <span class="va">upperhalf</span> <span class="op">=</span> <span class="fu">rids</span><span class="op">(</span> <span class="fl">1</span> <span class="op">)</span> <span class="op">*</span> <span class="fl">0</span> <span class="op">+</span> <span class="fl">1</span> <span class="co"># this just gives us more segmentation labels</span>
-<span class="va">upperhalf</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">128</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">64</span><span class="op">]</span> <span class="op">=</span> <span class="fl">2</span>
+<span class="va">upperhalf</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">64</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">32</span><span class="op">]</span> <span class="op">=</span> <span class="fl">2</span>
 <span class="va">ilist</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
   <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span> <span class="fu">rids</span><span class="op">(</span> <span class="fl">1</span> <span class="op">)</span>, <span class="fu">getMask</span><span class="op">(</span> <span class="fu">rids</span><span class="op">(</span> <span class="fl">1</span> <span class="op">)</span> <span class="op">)</span> <span class="op">)</span>,
   <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span> <span class="fu">rids</span><span class="op">(</span> <span class="fl">2</span> <span class="op">)</span>, <span class="fu">getMask</span><span class="op">(</span> <span class="fu">rids</span><span class="op">(</span> <span class="fl">2</span> <span class="op">)</span> <span class="op">)</span> <span class="op">)</span>,
-  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span> <span class="fu">rids</span><span class="op">(</span> <span class="fl">3</span> <span class="op">)</span>, <span class="fu">getMask</span><span class="op">(</span> <span class="fu">rids</span><span class="op">(</span> <span class="fl">3</span> <span class="op">)</span> <span class="op">)</span> <span class="op">)</span> <span class="op">)</span>
-<span class="va">slist</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
-  <span class="fu">thresholdImage</span><span class="op">(</span> <span class="va">ilist</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="st">"Otsu"</span>, <span class="fl">3</span> <span class="op">)</span> <span class="op">*</span> <span class="va">upperhalf</span>,
-  <span class="fu">thresholdImage</span><span class="op">(</span> <span class="va">ilist</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="st">"Otsu"</span>, <span class="fl">3</span> <span class="op">)</span> <span class="op">*</span> <span class="va">upperhalf</span>,
-  <span class="fu">thresholdImage</span><span class="op">(</span> <span class="va">ilist</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="st">"Otsu"</span>, <span class="fl">3</span> <span class="op">)</span> <span class="op">*</span> <span class="va">upperhalf</span>
-<span class="op">)</span></code></pre></div>
+  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span> <span class="fu">rids</span><span class="op">(</span> <span class="fl">3</span> <span class="op">)</span>, <span class="fu">getMask</span><span class="op">(</span> <span class="fu">rids</span><span class="op">(</span> <span class="fl">3</span> <span class="op">)</span> <span class="op">)</span> <span class="op">)</span>,
+  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span> <span class="fu">rids</span><span class="op">(</span> <span class="fl">4</span> <span class="op">)</span>, <span class="fu">getMask</span><span class="op">(</span> <span class="fu">rids</span><span class="op">(</span> <span class="fl">4</span> <span class="op">)</span> <span class="op">)</span> <span class="op">)</span>,
+  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span> <span class="fu">rids</span><span class="op">(</span> <span class="fl">5</span> <span class="op">)</span>, <span class="fu">getMask</span><span class="op">(</span> <span class="fu">rids</span><span class="op">(</span> <span class="fl">5</span> <span class="op">)</span> <span class="op">)</span> <span class="op">)</span> <span class="op">)</span>
+
+<span class="va">slist</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span>
+<span class="kw">for</span> <span class="op">(</span> <span class="va">k</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span> <span class="va">ilist</span> <span class="op">)</span> <span class="op">)</span>
+  <span class="va">slist</span><span class="op">[[</span><span class="va">k</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="fu">thresholdImage</span><span class="op">(</span> <span class="va">ilist</span><span class="op">[[</span><span class="va">k</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="st">"Otsu"</span>, <span class="fl">3</span> <span class="op">)</span> <span class="op">*</span> <span class="va">upperhalf</span></code></pre></div>
 <p>Here are definitions for some variables important for training: the numbers defining the segmentation labels and which images are for training and testing.</p>
+<p><strong>Run on both threads when setting up</strong></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># identify the number of segmentation classes</span>
 <span class="va">segregions</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span> <span class="va">slist</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>  <span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="co"># the seg numbers</span>
-<span class="va">isTrain</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="cn">TRUE</span>,<span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="cn">FALSE</span>,<span class="fl">1</span><span class="op">)</span> <span class="op">)</span></code></pre></div>
+<span class="va">isTrain</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="cn">TRUE</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">slist</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span>, <span class="cn">FALSE</span> <span class="op">)</span></code></pre></div>
 <p>This example will do landmark learning. If doing segmentation, then include the zero label i.e. just <code><a href="https://rdrr.io/r/base/sort.html">sort( unique( slist[[1]]  ))</a></code>.</p>
 </div>
 <div id="preparing-to-write-the-data-to-disk" class="section level2">
 <h2 class="hasAnchor">
 <a href="#preparing-to-write-the-data-to-disk" class="anchor"></a>Preparing to write the data to disk</h2>
 <p>We will generate (in this case) 5 files. For each, we generate a random file unique ID and then create file extensions that map to the type of augmented data we will be generating. In this case, we will generate augmented images, the associated masks, the points, coord conv output and a heatmap. These all derive from the image lists we defined above. This stuff will be run on CPU separately from the training loop.</p>
+<p><strong>Run on CPU thread when setting up</strong></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">nFiles</span> <span class="op">=</span> <span class="fl">5</span>
 <span class="kw">if</span> <span class="op">(</span> <span class="op">!</span> <span class="fu"><a href="https://rdrr.io/r/base/exists.html">exists</a></span><span class="op">(</span> <span class="st">"uid"</span> <span class="op">)</span> <span class="op">)</span>
@@ -171,6 +176,7 @@
 <a href="#augmenting-the-data" class="anchor"></a>Augmenting the data</h2>
 <p>We generate the data based on default parameters. If you want to learn more about the possibilities here, then please change the parameters and take a look at the results. We will show an example that looks at some parameter variations below.</p>
 <p>The call below will write a test file to numpy. We just write one in this case as we keep it constant during training. Write as many as you want for your application</p>
+<p><strong>Run on CPU thread when setting up</strong></p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">testfilename</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="va">trainTestFileNames</span><span class="op">[</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/grep.html">grep</a></span><span class="op">(</span><span class="st">"test"</span>,<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">trainTestFileNames</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
 <span class="va">gg</span> <span class="op">=</span> <span class="fu"><a href="../reference/generateDiskData.html">generateDiskData</a></span><span class="op">(</span>
@@ -197,6 +203,7 @@
   <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span> <span class="va">temp</span> <span class="op">)</span>
   <span class="op">}</span></code></pre></div>
 <p>We would typically run something like the code below in a continuous loop on a CPU thread separate from the GPU training loop. In practice, you may keep the parameters the same across train and test or set minimal augmentation parameters for test data.</p>
+<p><strong>Run on CPU thread when setting up</strong></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw">while</span><span class="op">(</span> <span class="cn">TRUE</span> <span class="op">)</span> <span class="op">{</span>
   <span class="kw">for</span> <span class="op">(</span> <span class="va">k</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">nFiles</span> <span class="op">)</span> <span class="op">{</span>
@@ -227,6 +234,7 @@
 <h2 class="hasAnchor">
 <a href="#set-up-the-unet" class="anchor"></a>set up the unet</h2>
 <p>Below is the default set up for unet-based lanmdark prediction given the above augmentation choices.</p>
+<p><strong>Run on GPU thread when setting up</strong></p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># set up the network - all parameters below could be optimized for the application</span>
 <span class="va">unet</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/ANTsRNet/man/createUnetModel2D.html">createUnetModel2D</a></span><span class="op">(</span>
@@ -254,8 +262,9 @@
 <a href="#reading-the-data-from-disk" class="anchor"></a>Reading the data from disk</h2>
 <p>Now we have to read the data from disk in a parallel thread. We handle this by looking at the file modification times and we, by default, choose to read the file that was modified <em>2nd</em> most recently.</p>
 <p>The functions below handle how to choose which image to read for training. Some experimentation may be needed to get the timing correct. You want to balance the time it takes to augment versus the time it takes to train through a batch.</p>
+<p><strong>Run on GPU thread when setting up</strong></p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">trtefns</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span><span class="op">(</span> <span class="st">"numpy/LMtrainttestfiles.csv"</span> <span class="op">)</span>
+<code class="sourceCode R"><span class="va">trtefns</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span><span class="op">(</span> <span class="st">"numpy/LMtrainttestfiles.csv"</span> <span class="op">)</span> <span class="co"># critical - same file name</span>
 <span class="va">trnnames</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">trtefns</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">grep</a></span><span class="op">(</span><span class="st">"train"</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">trtefns</span><span class="op">)</span> <span class="op">)</span><span class="op">]</span>
 <span class="va">tstnames</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">trtefns</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">grep</a></span><span class="op">(</span><span class="st">"test"</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">trtefns</span><span class="op">)</span> <span class="op">)</span><span class="op">]</span>
 <span class="va">loadfirst</span> <span class="op">=</span> <span class="fu"><a href="../reference/chooseTrainingFilesToRead.html">chooseTrainingFilesToRead</a></span><span class="op">(</span> <span class="va">trtefns</span><span class="op">[</span>,<span class="va">trnnames</span><span class="op">]</span> <span class="op">)</span>
@@ -266,6 +275,7 @@
 <div id="set-up-the-training-history-data-frame" class="section level2">
 <h2 class="hasAnchor">
 <a href="#set-up-the-training-history-data-frame" class="anchor"></a>set up the training history data frame</h2>
+<p><strong>Run on GPU thread when setting up</strong></p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mydf</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="op">)</span>
 <span class="va">epoch</span> <span class="op">=</span> <span class="fl">1</span>
@@ -276,11 +286,12 @@
 <h2 class="hasAnchor">
 <a href="#using-the-data-in-a-training-loop-for-a-neural-network" class="anchor"></a>Using the data in a training loop for a neural network</h2>
 <p>below is a “standard” tensorflow training loop with some alterations that make some efficiencies / choices a little more explicit but still clear. at least, that is what’s intended.</p>
+<p><strong>Run on GPU thread when setting up</strong></p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">ptWeight</span> <span class="op">=</span> <span class="va">tf</span><span class="op">$</span><span class="fu">cast</span><span class="op">(</span> <span class="fl">0.05</span>, <span class="va">mytype</span> <span class="op">)</span>
+<code class="sourceCode R"><span class="va">ptWeight</span> <span class="op">=</span> <span class="va">tf</span><span class="op">$</span><span class="fu">cast</span><span class="op">(</span> <span class="fl">0.005</span>, <span class="va">mytype</span> <span class="op">)</span>
 <span class="co"># Training loop parameters -----------------------------------------------------</span>
-<span class="va">num_epochs</span> <span class="op">&lt;-</span> <span class="fl">50000</span>
-<span class="va">optimizerE</span> <span class="op">&lt;-</span> <span class="va">tf</span><span class="op">$</span><span class="va">keras</span><span class="op">$</span><span class="va">optimizers</span><span class="op">$</span><span class="fu">Adam</span><span class="op">(</span><span class="fl">1.e-5</span><span class="op">)</span>
+<span class="va">num_epochs</span> <span class="op">&lt;-</span> <span class="fl">5000</span>
+<span class="va">optimizerE</span> <span class="op">&lt;-</span> <span class="va">tf</span><span class="op">$</span><span class="va">keras</span><span class="op">$</span><span class="va">optimizers</span><span class="op">$</span><span class="fu">Adam</span><span class="op">(</span><span class="fl">2.e-5</span><span class="op">)</span>
 <span class="va">batchsize</span> <span class="op">=</span> <span class="fl">2</span>
 <span class="kw">for</span> <span class="op">(</span><span class="va">epoch</span> <span class="kw">in</span> <span class="va">epoch</span><span class="op">:</span><span class="va">num_epochs</span> <span class="op">)</span> <span class="op">{</span>
   <span class="kw">if</span> <span class="op">(</span> <span class="op">(</span><span class="va">epoch</span> <span class="op">%%</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">mybs</span><span class="op">/</span><span class="va">batchsize</span><span class="op">)</span> <span class="op">)</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">epoch</span> <span class="op">&gt;</span> <span class="fl">1</span>  <span class="op">)</span> <span class="op">{</span>
@@ -329,15 +340,26 @@
   <span class="fu"><a href="https://rdrr.io/r/utils/write.table.html">write.csv</a></span><span class="op">(</span> <span class="va">mydf</span>, <span class="va">csvfn</span>, row.names<span class="op">=</span><span class="cn">FALSE</span> <span class="op">)</span>
   <span class="op">}</span></code></pre></div>
 </div>
+<div id="monitoring-training-progess" class="section level2">
+<h2 class="hasAnchor">
+<a href="#monitoring-training-progess" class="anchor"></a>monitoring training progess</h2>
+<p>take a look at the training-test convergence curves.</p>
+<p><strong>Run on CPU thread</strong></p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw">if</span> <span class="op">(</span> <span class="op">!</span> <span class="fu"><a href="https://rdrr.io/r/base/exists.html">exists</a></span><span class="op">(</span> <span class="st">"mydf"</span> <span class="op">)</span> <span class="op">)</span> <span class="va">mydf</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span><span class="op">(</span> <span class="st">'lm_weights_gpu.csv'</span> <span class="op">)</span>
+<span class="va">mydfnona</span> <span class="op">=</span> <span class="va">mydf</span><span class="op">[</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span> <span class="va">mydf</span><span class="op">$</span><span class="va">test_loss</span><span class="op">)</span>,  <span class="op">]</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/stats/ts.html">ts</a></span><span class="op">(</span> <span class="va">mydfnona</span> <span class="op">)</span> <span class="op">)</span></code></pre></div>
+</div>
 <div id="inference" class="section level2">
 <h2 class="hasAnchor">
 <a href="#inference" class="anchor"></a>Inference</h2>
 <p>Inference follows the same patterns as above but there are many ways that one can implement it. Please implement inference on your own.</p>
+<p><strong>Run on CPU thread when done</strong></p>
 </div>
 <div id="future-work" class="section level2">
 <h2 class="hasAnchor">
 <a href="#future-work" class="anchor"></a>Future work</h2>
-<p>The package will evolve with the associated needs of related projects.</p>
+<p>The package will evolve with the associated needs of related projects. NOTE: this example is really very trivial and is not meant to “work” on a real problem. However, it has been tested in very close form on real non-trivial problems with very similar parameters.</p>
 </div>
 </div>
   </div>

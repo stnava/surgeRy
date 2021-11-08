@@ -101,7 +101,7 @@ defining the segmentation labels and which images are for training and testing.
 ```{r setup3,echo=TRUE,eval=FALSE}
 # identify the number of segmentation classes
 segregions = sort( unique( slist[[1]]  ))[-1] # the seg numbers
-isTrain = c( rep(TRUE,2), rep(FALSE,1) )
+isTrain = c( rep(TRUE,length(slist)-1), FALSE )
 ```
 
 This example will do landmark learning.  If doing segmentation, then include
@@ -262,7 +262,7 @@ through a batch.
 
 **Run on GPU thread when setting up**
 
-```{r training,echo=TRUE,eval=FALSE}
+```{r howdowereadintime,echo=TRUE,eval=FALSE}
 trtefns = read.csv( "numpy/LMtrainttestfiles.csv" ) # critical - same file name
 trnnames = colnames(trtefns)[grep("train", colnames(trtefns) )]
 tstnames = colnames(trtefns)[grep("test", colnames(trtefns) )]
@@ -296,7 +296,7 @@ at least, that is what's intended.
 ptWeight = tf$cast( 0.005, mytype )
 # Training loop parameters -----------------------------------------------------
 num_epochs <- 5000
-optimizerE <- tf$keras$optimizers$Adam(5.e-6)
+optimizerE <- tf$keras$optimizers$Adam(2.e-5)
 batchsize = 2
 for (epoch in epoch:num_epochs ) {
   if ( (epoch %% round(mybs/batchsize) ) == 0 & epoch > 1  ) {
@@ -353,6 +353,7 @@ take a look at the training-test convergence curves.
 **Run on CPU thread**
 
 ```{r traintestcurves,eval=FALSE,echo=TRUE}
+if ( ! exists( "mydf" ) ) mydf = read.csv( 'lm_weights_gpu.csv' )
 mydfnona = mydf[ !is.na( mydf$test_loss),  ]
 plot( ts( mydfnona ) )
 ```
