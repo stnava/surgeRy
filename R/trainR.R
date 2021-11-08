@@ -44,6 +44,7 @@ chooseTrainingFilesToRead <- function( fileDataFrame ) {
 #' @export
 loadNPData <- function( numpynames ) {
   np <- import("numpy")
+  numpynames = as.character( numpynames )
   masknameindex = grep("mask",numpynames)
   ccnameindex = grep("coordconv",numpynames)
   heatmapnameindex = grep("heatmap",numpynames)
