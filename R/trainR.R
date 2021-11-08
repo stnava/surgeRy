@@ -137,7 +137,7 @@ generateDiskData  <- function(
   if (! missing( maskIndex ) ) {
     doMask = TRUE
     Xm = array( dim = c( numberOfSimulations, idim, 1 ) )
-    stopifnot( length( numpynames > 2 ) )
+    stopifnot( length( numpynames ) > 2 )
     if ( length( grep("mask",numpynames) ) == 0 )
       stop( "numpynames must have a name containing the string mask" )
     masknameindex = grep("mask",numpynames)
@@ -145,7 +145,7 @@ generateDiskData  <- function(
   if ( addCoordConv > 0 ) {
     doCC = TRUE
     Xcc = array( dim = c( numberOfSimulations, idim, length(idim) ) )
-    stopifnot( length( numpynames > 2 ) )
+    stopifnot( length( numpynames ) > 2 )
     if ( length( grep("coordconv",numpynames) ) == 0 )
       stop( "numpynames must have a name containing the string coordconv" )
     ccnameindex = grep("coordconv",numpynames)
