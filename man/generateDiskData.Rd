@@ -12,6 +12,7 @@ generateDiskData(
   addCoordConv = 0,
   segmentationsArePoints = FALSE,
   maskIndex,
+  smoothHeatMaps = 0,
   numpynames,
   numberOfSimulations = 16,
   referenceImage = NULL,
@@ -42,8 +43,13 @@ output image list.}
 
 \item{maskIndex}{the entry within the list of lists that contains a mask}
 
+\item{smoothHeatMaps}{numeric greater than zero will cause method to return heatmaps.
+the value passed here also sets the smoothing parameter passed to \code{smoothImage}
+in pixel/voxel space.}
+
 \item{numpynames}{the names of the numpy on disk files should contain something with
-the string mask if using maskIndex and something with the word coordconv if using CC}
+the string mask if using maskIndex and something with the word coordconv if using CC.
+should include something with the word heatmaps if using heatmaps.}
 
 \item{numberOfSimulations}{number of output images.  Default = 10.}
 
@@ -81,7 +87,17 @@ list of array
 Generate augmentation data with on disk storage
 }
 \examples{
-mydf = NULL
+library( ANTsR )
+ilist = list( list( ri(1) ), list( ri(2) ) )
+slist = list(
+  thresholdImage( ilist[[1]][[1]], "Otsu",3),
+  thresholdImage( ilist[[2]][[1]], "Otsu",3) )
+npn = paste0(tempfile(), c('i.npy','s.npy','heatmap.npy') )
+temp = generateDiskData( ilist, slist, c(0:3), c(TRUE,TRUE), numpynames = npn  )
+temp = generateDiskData( ilist, slist, c(0:3), c(TRUE,TRUE),
+  segmentationsArePoints=TRUE, numpynames = npn )
+temp = generateDiskData( ilist, slist, c(0:3), c(TRUE,TRUE),
+  segmentationsArePoints=TRUE, smoothHeatMaps = 3.0, numpynames = npn )
 }
 \author{
 Avants BB
