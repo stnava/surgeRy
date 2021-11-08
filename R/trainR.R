@@ -99,6 +99,7 @@ loadNPData <- function( numpynames ) {
 #' @return list of array
 #' @author Avants BB
 #' @importFrom ANTsRCore getCentroids iMath thresholdImage
+#' @importFrom ANTsRCore smoothImage antsTransformPhysicalPointToIndex
 #' @importFrom R.utils lastModified
 #' @importFrom patchMatchR coordinateImages
 #' @importFrom ANTsRNet dataAugmentation
