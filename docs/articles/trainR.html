@@ -288,9 +288,9 @@
 <p>below is a “standard” tensorflow training loop with some alterations that make some efficiencies / choices a little more explicit but still clear. at least, that is what’s intended.</p>
 <p><strong>Run on GPU thread when setting up</strong></p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">ptWeight</span> <span class="op">=</span> <span class="va">tf</span><span class="op">$</span><span class="fu">cast</span><span class="op">(</span> <span class="fl">0.005</span>, <span class="va">mytype</span> <span class="op">)</span>
+<code class="sourceCode R"><span class="va">ptWeight</span> <span class="op">=</span> <span class="va">tf</span><span class="op">$</span><span class="fu">cast</span><span class="op">(</span> <span class="fl">0.05</span>, <span class="va">mytype</span> <span class="op">)</span>
 <span class="co"># Training loop parameters -----------------------------------------------------</span>
-<span class="va">num_epochs</span> <span class="op">&lt;-</span> <span class="fl">5000</span>
+<span class="va">num_epochs</span> <span class="op">&lt;-</span> <span class="fl">50000</span>
 <span class="va">optimizerE</span> <span class="op">&lt;-</span> <span class="va">tf</span><span class="op">$</span><span class="va">keras</span><span class="op">$</span><span class="va">optimizers</span><span class="op">$</span><span class="fu">Adam</span><span class="op">(</span><span class="fl">2.e-5</span><span class="op">)</span>
 <span class="va">batchsize</span> <span class="op">=</span> <span class="fl">2</span>
 <span class="kw">for</span> <span class="op">(</span><span class="va">epoch</span> <span class="kw">in</span> <span class="va">epoch</span><span class="op">:</span><span class="va">num_epochs</span> <span class="op">)</span> <span class="op">{</span>

@@ -293,9 +293,9 @@ at least, that is what's intended.
 **Run on GPU thread when setting up**
 
 ```{r training,echo=TRUE,eval=FALSE}
-ptWeight = tf$cast( 0.005, mytype )
+ptWeight = tf$cast( 0.05, mytype )
 # Training loop parameters -----------------------------------------------------
-num_epochs <- 5000
+num_epochs <- 50000
 optimizerE <- tf$keras$optimizers$Adam(2.e-5)
 batchsize = 2
 for (epoch in epoch:num_epochs ) {
