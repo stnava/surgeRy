@@ -222,6 +222,7 @@ generateDiskData  <- function(
             if ( myimgdim == 2 ) heatmap[mypti[1,1],mypti[1,2]]=1
             if ( myimgdim == 3 ) heatmap[mypti[1,1],mypti[1,2],mypti[1,3]]=1
             heatmap = smoothImage( heatmap, smoothHeatMaps, sigmaInPhysicalCoordinates=FALSE )
+            heatmap = iMath( heatmap, "Normalize" )
             if ( myimgdim == 2 ) Yh[k, , , j ] = as.array( heatmap )
             if ( myimgdim == 3 ) Yh[k, , , , j ] = as.array( heatmap )
             }
