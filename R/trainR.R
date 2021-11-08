@@ -211,7 +211,7 @@ generateDiskData  <- function(
       }
     }
     if ( ! missing( maskIndex ) ) {
-      mymask = thresholdImage( data$simulatedImages[[k]][[maskIndex]], 1e-8, Inf )
+      mymask = thresholdImage( data$simulatedImages[[k]][[maskIndex]], 0.5, Inf )
       if ( myimgdim == 2 ) Xm[k,,,1] = as.array( mymask )
       if ( myimgdim == 3 ) Xm[k,,,,1] = as.array( mymask )
     }
