@@ -372,13 +372,42 @@ mydfnona = mydf[ !is.na( mydf$test_loss),  ]
 plot( ts( mydfnona ) )
 ```
 
-## see some images
+
+
+## show the predicted points in the test data
+
+Visualize the predicted points.
+
+```{r viz,echo=TRUE,eval=FALSE}
+layout(matrix(1:2,nrow=1))
+wsub = 1
+testimg = as.antsImage( Xte[[1]][wsub,,,1] ) %>%
+  antsCopyImageInfo2( rids( 1 ) )
+preds = predict( unetLM, Xte[c(1,3:4)] )
+# these are in physical space
+predPoints = as.array( preds[[2]] )[wsub,,]
+truPoints = Xte[[2]][wsub,,] # true points
+print(paste("Error",norm(truPoints-predPoints,"F")))
+print(paste("%Error",norm(truPoints-predPoints,"F")/norm(truPoints,"F")*100,"%"))
+truIndex = round( antsTransformPhysicalPointToIndex( testimg, truPoints ) )
+predIndex = round( antsTransformPhysicalPointToIndex( testimg, predPoints ) )
+# make point images
+truPointsImage = predPointsImage = testimg * 0
+for ( j in 1:nrow( truPoints ) ) {
+  truPointsImage[truIndex[j,1],truIndex[j,2]]=j
+  predPointsImage[predIndex[j,1],predIndex[j,2]]=j
+  }
+plot( testimg, iMath( truPointsImage, "GD",2) )
+plot( testimg, iMath( predPointsImage, "GD",2) )
+```
+
+## look at some of the underlying images
 
 Visualize the predicted images.
 
 ```{r viz,echo=TRUE,eval=FALSE}
 layout(matrix(1:8,nrow=2))
-wsub = 1
+wsub = 6
 for ( wpt in 1:length(segregions) ) {
   preds = predict( unetLM, Xte[c(1,3:4)] )
   testimg = as.antsImage( Xte[[1]][wsub,,,1] )
@@ -391,7 +420,7 @@ for ( wpt in 1:length(segregions) ) {
   }
 ```
 
-## Inference
+## Inference in completely out of sample data
 
 Inference follows the same patterns as above but there are many ways that
 one can implement it.  Please implement inference on your own.
