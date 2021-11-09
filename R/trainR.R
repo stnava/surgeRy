@@ -125,7 +125,7 @@ loadNPData <- function( numpynames ) {
 #' slist = list(
 #'   thresholdImage( ilist[[1]][[1]], "Otsu",3),
 #'   thresholdImage( ilist[[2]][[1]], "Otsu",3) )
-#' npn = paste0(tempfile(), c('i.npy','s.npy','heatmap.npy') )
+#' npn = paste0(tempfile(), c('i.npy','s.npy','heatmap.npy','coordconv.npy') )
 #' temp = generateDiskData( ilist, slist, c(0:3), c(TRUE,TRUE), numpynames = npn  )
 #' temp = generateDiskData( ilist, slist, c(0:3), c(TRUE,TRUE),
 #'   segmentationsArePoints=TRUE, numpynames = npn )
