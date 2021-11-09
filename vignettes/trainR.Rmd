@@ -378,7 +378,7 @@ plot( ts( mydfnona ) )
 
 Visualize the predicted points.
 
-```{r viz,echo=TRUE,eval=FALSE}
+```{r vizp,echo=TRUE,eval=FALSE}
 layout(matrix(1:2,nrow=1))
 wsub = 1
 testimg = as.antsImage( Xte[[1]][wsub,,,1] ) %>%
@@ -405,7 +405,7 @@ plot( testimg, iMath( predPointsImage, "GD",2) )
 
 Visualize the predicted images.
 
-```{r viz,echo=TRUE,eval=FALSE}
+```{r vizi,echo=TRUE,eval=FALSE}
 layout(matrix(1:8,nrow=2))
 wsub = 6
 for ( wpt in 1:length(segregions) ) {
