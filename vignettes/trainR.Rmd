@@ -307,7 +307,7 @@ for ( ptwt in c( 0.001, 0.005, 0.01, 0.05, 0.1 ) ) {
   if ( ptwt == 0.01 ) unetLM = unetLM1
   ptWeight = tf$cast( ptwt, mytype )
   num_epochs <- 100
-  if ( ptwt == 0.1 ) num_epochs = 500
+  if ( ptwt == 0.1 ) num_epochs = 1500
   optimizerE <- tf$keras$optimizers$Adam(1.e-6)
   batchsize = 2
   for (epoch in 1:num_epochs ) {
