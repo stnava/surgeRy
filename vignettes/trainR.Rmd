@@ -281,6 +281,36 @@ mybs = dim( Xtr[[1]] )[1]
 Xte = trainR::loadNPData( trtefns[1,tstnames] )
 ```
 
+spatial tensors are indexed in the following way:
+
+* first index: subject (or batch) index 
+* second index: x coordinate
+* third index : y coordinate 
+* fourth index : z or channels  
+* last/fifth index (if available): channels
+
+e.g in this example we see:
+
+```
+> dim( Xtr[[1]] )
+[1] 64 64 64  1
+```
+
+which is the size of the batch (64) and then spatial dimension of the input image (64x64) with just one channel.
+
+point coordinate tensors are indexed in the following way:
+
+* first index: subject (or batch) index 
+* second index: which landmark we are going to index (eg the first, second etc)
+* third index : the point / landmark coordinate itself which will be a 2 vector in 2D and 3 vector in 3D
+
+e.g.
+```
+> dim( Xtr[[2]] )
+[1] 64  4  2
+```
+which is the size of the batch (64) and then number of landmarks (4 here) with 2 spatial dimensions.
+
 
 ## set up the training history data frame
 
