@@ -233,6 +233,18 @@ the above augmentation choices.
 **Run on GPU thread when setting up**
 
 ```{r unetsetup,echo=TRUE,eval=FALSE}
+library( ANTsR )
+library( ANTsRNet )
+library( tensorflow )
+library( keras )
+library( tfdatasets )
+library( reticulate )
+library( patchMatchR )
+library( trainR )
+np <- import("numpy")
+mytype = "float32"
+nlayers = 4   # for unet
+downsam = 4   # downsamples images
 # set up the network - all parameters below could be optimized for the application
 unet = createUnetModel2D(
        list( NULL, NULL, 1 ),
@@ -283,10 +295,10 @@ Xte = trainR::loadNPData( trtefns[1,tstnames] )
 
 spatial tensors are indexed in the following way:
 
-* first index: subject (or batch) index 
+* first index: subject (or batch) index
 * second index: x coordinate
-* third index : y coordinate 
-* fourth index : z or channels  
+* third index : y coordinate
+* fourth index : z or channels
 * last/fifth index (if available): channels
 
 e.g in this example we see:
@@ -300,7 +312,7 @@ which is the size of the batch (64) and then spatial dimension of the input imag
 
 point coordinate tensors are indexed in the following way:
 
-* first index: subject (or batch) index 
+* first index: subject (or batch) index
 * second index: which landmark we are going to index (eg the first, second etc)
 * third index : the point / landmark coordinate itself which will be a 2 vector in 2D and 3 vector in 3D
 
