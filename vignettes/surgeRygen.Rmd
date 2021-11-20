@@ -1,8 +1,8 @@
 ---
-title: "trainR: basic landmark data generation example explained"
+title: "surgeRy: basic landmark data generation example explained"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{trainR: basic landmark data generation example explained}
+  %\VignetteIndexEntry{surgeRy: basic landmark data generation example explained}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 set.seed( 000 )
 ```
 
-# Overview of `trainR`
+# Overview of `surgeRy`
 
 We overview landmark-specific training although the approach is very similar
 for segmentations or segmentations and landmarks.
@@ -35,7 +35,7 @@ Points are in physical space.
 
 ## Setting up the data
 
-**This will be run on a separate thread (or `R` session) from the `trainRLMtrain.Rmd`
+**This will be run on a separate thread (or `R` session) from the `surgeRyLMtrain.Rmd`
 code.**
 Environment variables control multi-threading for CPU in ANTs and tensorflow.
 See below for how to set these at the beginning on an experiment.  We set
@@ -59,7 +59,7 @@ library( keras )
 library( tfdatasets )
 library( reticulate )
 library( patchMatchR )
-library( trainR )
+library( surgeRy )
 np <- import("numpy")
 mytype = "float32"
 downsam = 4   # downsamples images

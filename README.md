@@ -1,8 +1,8 @@
-# trainR
+# surgeRy
 
-[![CircleCI](https://circleci.com/gh/stnava/trainR/tree/master.svg?style=svg)](https://circleci.com/gh/stnava/trainR/tree/master)
+[![CircleCI](https://circleci.com/gh/stnava/surgeRy/tree/master.svg?style=svg)](https://circleci.com/gh/stnava/surgeRy/tree/master)
 
-documentation page [here](https://stnava.github.io/trainR/)
+documentation page [here](https://stnava.github.io/surgeRy/)
 
 ## deep learning training
 
@@ -15,7 +15,7 @@ The pre-release version of the package can be pulled from GitHub using the [devt
 
 ```r
     # install.packages("devtools")
-    devtools::install_github("stnava/trainR", build_vignettes=TRUE)
+    devtools::install_github("stnava/surgeRy", build_vignettes=TRUE)
 ```
 
 ## For developers

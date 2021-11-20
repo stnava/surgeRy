@@ -1,2 +1,2 @@
 library(testthat)
-test_check("trainR")
+test_check("surgeRy")

@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>trainR: basic landmark unet training example explained • trainR</title>
+<title>surgeRy: basic landmark unet training example explained • surgeRy</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="trainR: basic landmark unet training example explained">
-<meta property="og:description" content="trainR">
+<script src="../pkgdown.js"></script><meta property="og:title" content="surgeRy: basic landmark unet training example explained">
+<meta property="og:description" content="surgeRy">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -30,7 +30,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">trainR</a>
+        <a class="navbar-link" href="../index.html">surgeRy</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
       </span>
     </div>
@@ -44,7 +44,7 @@
   </a>
 </li>
 <li>
-  <a href="../articles/trainR.html">Get started</a>
+  <a href="../articles/surgeRy.html">Get started</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
@@ -57,10 +57,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/trainRLMgen.html">trainR: basic landmark data generation example explained</a>
+      <a href="../articles/surgeRygen.html">surgeRy: basic landmark data generation example explained</a>
     </li>
     <li>
-      <a href="../articles/trainRLMtrain.html">trainR: basic landmark unet training example explained</a>
+      <a href="../articles/surgeRytrain.html">surgeRy: basic landmark unet training example explained</a>
     </li>
   </ul>
 </li>
@@ -70,7 +70,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/stnava/trainR/">
+  <a href="https://github.com/stnava/surgeRy/">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -88,11 +88,11 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>trainR: basic landmark unet training example explained</h1>
+      <h1 data-toc-skip>surgeRy: basic landmark unet training example explained</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/stnava/trainR/blob/master/vignettes/trainRLMtrain.Rmd"><code>vignettes/trainRLMtrain.Rmd</code></a></small>
-      <div class="hidden name"><code>trainRLMtrain.Rmd</code></div>
+      <small class="dont-index">Source: <a href="https://github.com/stnava/surgeRy/blob/master/vignettes/surgeRytrain.Rmd"><code>vignettes/surgeRytrain.Rmd</code></a></small>
+      <div class="hidden name"><code>surgeRytrain.Rmd</code></div>
 
     </div>
 
@@ -101,7 +101,7 @@
 <div id="assumptions-for-this-vignette" class="section level2">
 <h2 class="hasAnchor">
 <a href="#assumptions-for-this-vignette" class="anchor"></a>Assumptions for this vignette</h2>
-<p>We assume you ran the <code>trainRLMgen.Rmd</code> already.</p>
+<p>We assume you ran the <code>surgeRyLMgen.Rmd</code> already.</p>
 </div>
 <div id="set-up-the-unet" class="section level2">
 <h2 class="hasAnchor">
@@ -138,7 +138,7 @@
 <span class="co">#&gt; The following objects are masked from 'package:ANTsRNet':</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;     MSE, PSNR, SSIM</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span> <span class="va"><a href="https://github.com/stnava/trainR">trainR</a></span> <span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span> <span class="va"><a href="https://github.com/stnava/surgeRy">surgeRy</a></span> <span class="op">)</span>
 <span class="va">np</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/import.html">import</a></span><span class="op">(</span><span class="st">"numpy"</span><span class="op">)</span>
 <span class="va">mytype</span> <span class="op">=</span> <span class="st">"float32"</span>
 <span class="va">nlayers</span> <span class="op">=</span> <span class="fl">4</span>   <span class="co"># for unet</span>
@@ -178,9 +178,9 @@
 <span class="va">trnnames</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">trtefns</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">grep</a></span><span class="op">(</span><span class="st">"train"</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">trtefns</span><span class="op">)</span> <span class="op">)</span><span class="op">]</span>
 <span class="va">tstnames</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">trtefns</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">grep</a></span><span class="op">(</span><span class="st">"test"</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">trtefns</span><span class="op">)</span> <span class="op">)</span><span class="op">]</span>
 <span class="va">loadfirst</span> <span class="op">=</span> <span class="fu"><a href="../reference/chooseTrainingFilesToRead.html">chooseTrainingFilesToRead</a></span><span class="op">(</span> <span class="va">trtefns</span><span class="op">[</span>,<span class="va">trnnames</span><span class="op">]</span> <span class="op">)</span>
-<span class="va">Xtr</span> <span class="op">=</span> <span class="fu">trainR</span><span class="fu">::</span><span class="fu"><a href="../reference/loadNPData.html">loadNPData</a></span><span class="op">(</span> <span class="va">loadfirst</span> <span class="op">)</span>
+<span class="va">Xtr</span> <span class="op">=</span> <span class="fu">surgeRy</span><span class="fu">::</span><span class="fu"><a href="../reference/loadNPData.html">loadNPData</a></span><span class="op">(</span> <span class="va">loadfirst</span> <span class="op">)</span>
 <span class="va">mybs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span> <span class="va">Xtr</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>
-<span class="va">Xte</span> <span class="op">=</span> <span class="fu">trainR</span><span class="fu">::</span><span class="fu"><a href="../reference/loadNPData.html">loadNPData</a></span><span class="op">(</span> <span class="va">trtefns</span><span class="op">[</span><span class="fl">1</span>,<span class="va">tstnames</span><span class="op">]</span> <span class="op">)</span></code></pre></div>
+<span class="va">Xte</span> <span class="op">=</span> <span class="fu">surgeRy</span><span class="fu">::</span><span class="fu"><a href="../reference/loadNPData.html">loadNPData</a></span><span class="op">(</span> <span class="va">trtefns</span><span class="op">[</span><span class="fl">1</span>,<span class="va">tstnames</span><span class="op">]</span> <span class="op">)</span></code></pre></div>
 <p>spatial tensors are indexed in the following way:</p>
 <ul>
 <li>first index: subject (or batch) index</li>
@@ -234,7 +234,7 @@
         <span class="co"># refresh the data</span>
         <span class="va">locfns</span> <span class="op">=</span> <span class="fu"><a href="../reference/chooseTrainingFilesToRead.html">chooseTrainingFilesToRead</a></span><span class="op">(</span> <span class="va">trtefns</span><span class="op">[</span>,<span class="va">trnnames</span><span class="op">]</span> <span class="op">)</span>
         <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span> <span class="va">locfns</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">)</span>
-        <span class="va">Xtr</span> <span class="op">=</span> <span class="fu">trainR</span><span class="fu">::</span><span class="fu"><a href="../reference/loadNPData.html">loadNPData</a></span><span class="op">(</span> <span class="va">locfns</span> <span class="op">)</span>
+        <span class="va">Xtr</span> <span class="op">=</span> <span class="fu">surgeRy</span><span class="fu">::</span><span class="fu"><a href="../reference/loadNPData.html">loadNPData</a></span><span class="op">(</span> <span class="va">locfns</span> <span class="op">)</span>
       <span class="op">}</span>
     <span class="va">ct</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span> <span class="va">mydf</span> <span class="op">)</span> <span class="op">+</span> <span class="fl">1</span>
     <span class="va">mysam</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">Xtr</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, <span class="va">batchsize</span> <span class="op">)</span>

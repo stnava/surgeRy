@@ -326,7 +326,7 @@ generateDiskData  <- function(
 #' library( reticulate )
 #' library( ANTsR )
 #' library( ANTsRNet )
-#' library( trainR )
+#' library( surgeRy )
 #' image1 <- antsImageRead( getANTsRData( "r16" ) )
 #' image2 <- antsImageRead( getANTsRData( "r27" ) )
 #' segmentation1 <- thresholdImage( image1, "Otsu", 3 )

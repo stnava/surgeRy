@@ -1,4 +1,4 @@
-Package: trainR
+Package: surgeRy
 Type: Package
 Title: Processing, Filtering and Data Organization for Deep Learning Training
 Description: Deep learning in medical imaging requires additional effort to
@@ -8,8 +8,8 @@ Authors@R: c(
     person(c("Brian", "B"), "Avants", role = c("aut", "cre"), email = "stnava@gmail.com", comment = c(ORCID = "0000-0002-4212-3362")),
     person(c("Nicholas", "J"), "Tustison", role = c("aut"), email = "ntustison@gmail.com", comment = c(ORCID = "0000-0001-9418-5103"))
     )
-URL: https://github.com/stnava/trainR
-BugReports: https://github.com/stnava/trainR/issues
+URL: https://github.com/stnava/surgeRy
+BugReports: https://github.com/stnava/surgeRy/issues
 License: GPL-3
 Depends:
     R (>= 3.0.0)
