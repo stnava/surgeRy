@@ -3,5 +3,7 @@ pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
   trainR: trainR.html
-last_built: 2021-11-19T18:25Z
+  trainRLMgen: trainRLMgen.html
+  trainRLMtrain: trainRLMtrain.html
+last_built: 2021-11-20T20:37Z
 

@@ -1,0 +1,202 @@
+---
+title: "trainR: basic landmark data generation example explained"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{trainR: basic landmark data generation example explained}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+set.seed( 000 )
+```
+
+# Overview of `trainR`
+
+We overview landmark-specific training although the approach is very similar
+for segmentations or segmentations and landmarks.
+
+the augmentation strategy will use:
+
+* geometric transformation of images (rigid, affine, etc)
+
+* gaussian noise
+
+* simulated bias field
+
+* histogram warping
+
+to create new versions of images and points from an input image list.
+Points are in physical space.
+
+## Setting up the data
+
+**This will be run on a separate thread (or `R` session) from the `trainRLMtrain.Rmd`
+code.**
+Environment variables control multi-threading for CPU in ANTs and tensorflow.
+See below for how to set these at the beginning on an experiment.  We set
+the number of threads to 12 below.
+
+```{r setup2,echo=TRUE,eval=TRUE}
+Sys.setenv("TF_NUM_INTEROP_THREADS"=12)
+Sys.setenv("TF_NUM_INTRAOP_THREADS"=12)
+Sys.setenv("ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS"=12)
+```
+
+See the code below for how to assemble the images and points for augmentation.
+
+```{r setupX,echo=TRUE,eval=TRUE}
+# record the GPU
+gpuid = Sys.getenv(x = "CUDA_VISIBLE_DEVICES")
+library( ANTsR )
+library( ANTsRNet )
+library( tensorflow )
+library( keras )
+library( tfdatasets )
+library( reticulate )
+library( patchMatchR )
+library( trainR )
+np <- import("numpy")
+mytype = "float32"
+downsam = 4   # downsamples images
+# collect your images - a list of lists - multiple entries in each list are fine
+rids <- function( x, downsammer=4 ) {
+  img = ri( x )
+  resampleImage( img, dim(img)/downsammer, useVoxels=TRUE )
+}
+upperhalf = rids( 1 ) * 0 + 1 # this just gives us more segmentation labels
+upperhalf[33:64,1:32] = 2
+upperhalf[1:32,33:64] = 3
+upperhalf[33:64,33:64] = 4
+ilist = list(
+  list( rids( 1 ), getMask( rids( 1 ) ) ),
+  list( rids( 2 ), getMask( rids( 2 ) ) ),
+  list( rids( 3 ), getMask( rids( 3 ) ) ),
+  list( rids( 4 ), getMask( rids( 4 ) ) ),
+  list( rids( 6 ), getMask( rids( 6 ) ) ) )
+
+slist = list()
+plist = list()
+for ( k in 1:length( ilist ) ) {
+  temp = thresholdImage( ilist[[k]][[1]], "Otsu", 3 )
+  temp = temp * ( ilist[[k]][[2]] - iMath( ilist[[k]][[2]], "ME", 6 ) )
+  slist[[k]] = thresholdImage( temp, 2, 2 ) * upperhalf
+  plist[[k]] = getCentroids( slist[[k]] )[,1:2]
+  plot( ilist[[k]][[1]], slist[[k]] )
+}
+```
+
+Here are definitions for some variables important for training:
+which images are for training and testing.
+
+```{r setup3,echo=TRUE,eval=TRUE}
+# identify the number of segmentation classes
+isTrain = c( rep(TRUE,length(slist)-1), FALSE )
+```
+
+This example will do landmark learning.
+
+
+## Preparing to write the data to disk
+
+We will generate (in this case) 5 files.  For each, we generate a random file
+unique ID and then create file extensions that map to the type of augmented
+data we will be generating.  In this case, we will generate augmented images,
+the associated masks, the points, coord conv output and a heatmap.  These
+all derive from the image lists we defined above.  This stuff will be run
+on CPU separately from the training loop.
+
+```{r disk,echo=TRUE,eval=FALSE}
+nFiles = 5
+if ( ! exists( "uid" ) )
+  uid = paste0("LM",sample(1:1000000,nFiles),"Z")
+types = c("Images.npy", "pointset.npy", "mask.npy", "coordconv.npy", "heatmap.npy" )
+nmats = length(types) # 5 arrays out
+trainTestFileNames = data.frame( matrix("",nrow=nFiles,ncol=nmats*2))
+colnamesTT = c(
+  paste0("train",gsub(".npy","",types)),
+  paste0("test",gsub(".npy","",types)) )
+colnames( trainTestFileNames ) = colnamesTT
+for ( k in 1:nFiles ) {
+  twogroups = paste0("numpy/",uid[k],c("train","test"))
+  npextsTr = paste0( twogroups[1], types )
+  npextsTe = paste0( twogroups[2], types )
+  trainTestFileNames[k,]=as.character( c(npextsTr,npextsTe) )
+}
+write.csv( trainTestFileNames, "numpy/LMtrainttestfiles.csv", row.names=FALSE)
+```
+
+
+## Augmenting the data
+
+We generate the data based on default parameters. If you want to learn more about
+the possibilities here, then please change the parameters and take a look at the
+results.   We will show an example that looks at some parameter variations below.
+
+The call below will write a test file to numpy.  We just write one in this
+case as we keep it constant during training.  Write as many as you want for
+your application
+
+
+```{r augment,echo=TRUE,eval=FALSE}
+testfilename = as.character(trainTestFileNames[1,grep("test",colnames(trainTestFileNames))])
+gg = generateDiskPointAndSegmentationData(
+    inputImageList = ilist,
+    pointsetList = plist,
+    selector = !isTrain,
+    smoothHeatMaps = 3.0,
+    maskIndex = 2,
+    transformType = "scaleShear",
+    noiseParameters = c(0, 0.05),
+    sdSimulatedBiasField = 0.01,
+    sdHistogramWarping = 0.01,
+    sdAffine = 0.1, # limited
+    numpynames = testfilename,
+    numberOfSimulations = 8
+    )
+# visualize example augmented images
+layout( matrix(1:8,nrow=2))
+for ( k in 1:8 ) {
+  temp = as.antsImage( gg[[1]][k,,,1] )
+  plot( temp )
+  }
+```
+
+
+We would typically run something like the code below in a continuous loop on
+a CPU thread separate from the GPU training loop.  In practice, you may keep
+the parameters the same across train and test or set minimal augmentation
+parameters for test data.
+
+```{r augmenttrain,echo=TRUE,eval=FALSE}
+while( TRUE ) {
+  for ( k in 1:nFiles ) {
+    trnfilename = as.character(trainTestFileNames[k,grep("train",colnames(trainTestFileNames))])
+    print( paste(k, trnfilename[1] ) )
+    gg = generateDiskPointAndSegmentationData(
+        inputImageList = ilist,
+        pointsetList = plist,
+        selector = isTrain,
+        smoothHeatMaps = 3.0,
+        maskIndex = 2,
+        transformType = "scaleShear",
+        noiseParameters = c(0, 0.05),
+        sdSimulatedBiasField = 0.01,
+        sdHistogramWarping = 0.01,
+        sdAffine = 0.1,
+        numpynames = trnfilename,
+        numberOfSimulations = 64
+        )
+    }
+  }
+```
+
+Getting the above steps correct is very critical to successful training.
+This package currently hides some of that complexity for basic segmentation and
+landmark prediction.  However, it is always possible to make mistakes if the
+training decisions are inconsistent with the underlying theory.  A forthcoming
+publication will explain the theory associated with this package.

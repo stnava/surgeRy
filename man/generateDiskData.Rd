@@ -2,7 +2,7 @@
 % Please edit documentation in R/trainR.R
 \name{generateDiskData}
 \alias{generateDiskData}
-\title{Generate augmentation data with on disk storage}
+\title{Generate segmentation-based augmentation data with on disk storage}
 \usage{
 generateDiskData(
   inputImageList,
@@ -84,7 +84,7 @@ pepperValue" are assumed to be in the intensity normalized range of \code{[0, 1]
 list of array
 }
 \description{
-Generate augmentation data with on disk storage
+Generate segmentation-based augmentation data with on disk storage
 }
 \examples{
 library( ANTsR )

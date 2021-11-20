@@ -70,7 +70,7 @@ loadNPData <- function( numpynames ) {
 }
 
 
-#' Generate augmentation data with on disk storage
+#' Generate segmentation-based augmentation data with on disk storage
 #'
 #' @param inputImageList list of lists of input images to warp.  The internal
 #'          list sets contains one or more images (per subject) which are
@@ -262,5 +262,288 @@ generateDiskData  <- function(
     np$save( numpynames[heatmapnameindex], Yh )
     outlist[[length(outlist)+1]] = Yh
     }
+  return( outlist  )
+  }
+
+
+#' Generate point set and image augmentation data with on disk storage
+#'
+#' This assumes that at least images and point sets are passed in - segmentation
+#' images are optional.  The indexing of point sets will be whichSimulation by
+#' whichPoint by dimensionality (e.g. 10 x 25 x 3 for 10 simulations of point sets
+#' with 25 points in 3D.
+#'
+#' @param inputImageList list of lists of input images to warp.  The internal
+#'          list sets contains one or more images (per subject) which are
+#'          assumed to be mutually aligned.  The outer list contains
+#'          multiple subject lists which are randomly sampled to produce
+#'          output image list.
+#' @param pointsetList list of matrices containing point sets where each matrix
+#' is of size n-points by dimensionality matching to input segmentation/image data (optional)
+#' @param segmentationImageList of segmentation images corresponding to the input image list (optional)
+#' @param segmentationNumbers the integer list of values in the segmentation to model
+#' @param selector subsets the input lists (eg to define train test splits)
+#' @param maskIndex the entry within the list of lists that contains a mask
+#' @param smoothHeatMaps numeric greater than zero will cause method to return heatmaps.
+#' the value passed here also sets the smoothing parameter passed to \code{smoothImage}
+#' in pixel/voxel space.
+#' @param numpynames the names of the numpy on disk files should include something
+#' with the word pointset. Also:
+#' the string segmentation if using segmentations and
+#' the string mask if using maskIndex and something with the word coordconv if using CC.
+#' should include something with the word heatmaps if using heatmaps.
+#' @param numberOfSimulations number of output images/pointsets.  Default = 10.
+#' @param referenceImage defines the spatial domain for all output images.  If
+#' the input images do not match the spatial domain of the reference image, we
+#' internally resample the target to the reference image.  This could have
+#' unexpected consequences.  Resampling to the reference domain is performed by
+#' testing using \code{antsImagePhysicalSpaceConsistency} then calling
+#' \code{resampleImageToTarget} upon failure.
+#' @param transformType one of the following options
+#' \code{c( "translation", "rigid", "scaleShear", "affine" )}.  Non-invertible
+#' models will not work with point sets.
+#' @param noiseModel one of the following options
+#'   \code{c( "additivegaussian", "saltandpepper", "shot", "speckle" )}
+#' @param noiseParameters 'additivegaussian': \code{c( mean, standardDeviation )},
+#'   'saltandpepper': \code{c( probability, saltValue, pepperValue) }, 'shot':
+#'    scale, 'speckle': standardDeviation.  Note that the standard deviation,
+#'    scale, and probability values are *max* values and are randomly selected
+#'    in the range \code{[0, noise_parameter]}.  Also, the "mean", "saltValue" and
+#'    pepperValue" are assumed to be in the intensity normalized range of \code{[0, 1]}.
+#' @param sdSimulatedBiasField Characterize the standard deviation of the amplitude.
+#' @param sdHistogramWarping Determines the strength of the bias field.
+#' @param sdAffine Determines the amount of transformation based change
+#'
+#' @return list of array
+#' @author Avants BB
+#' @importFrom ANTsRCore getCentroids iMath thresholdImage
+#' @importFrom ANTsRCore smoothImage antsTransformPhysicalPointToIndex
+#' @importFrom R.utils lastModified
+#' @importFrom patchMatchR coordinateImages
+#' @importFrom ANTsRNet dataAugmentation
+#' @importFrom reticulate import
+#' @examples
+#' library( reticulate )
+#' library( ANTsR )
+#' library( ANTsRNet )
+#' library( trainR )
+#' image1 <- antsImageRead( getANTsRData( "r16" ) )
+#' image2 <- antsImageRead( getANTsRData( "r27" ) )
+#' segmentation1 <- thresholdImage( image1, "Otsu", 3 )
+#' segmentation11 = thresholdImage( segmentation1, 1, 1 )
+#' segmentation12 = thresholdImage( segmentation1, 2, 2 )
+#' segmentation13 = thresholdImage( segmentation1, 3, 3 )
+#' segmentation11[1:128,1:256]=0
+#' segmentation12[1:256,1:180]=0
+#' segmentation13[1:256,1:128]=0
+#' segmentation1 = segmentation11 + segmentation12* 2 + segmentation13 * 3
+#' segmentation2 <- thresholdImage( image2, "Otsu", 3 )
+#' segmentation21 = thresholdImage( segmentation2, 1, 1 )
+#' segmentation22 = thresholdImage( segmentation2, 2, 2 )
+#' segmentation23 = thresholdImage( segmentation2, 3, 3 )
+#' segmentation21[1:128,1:256]=0
+#' segmentation22[1:256,1:180]=0
+#' segmentation23[1:256,1:128]=0
+#' segmentation2 = segmentation21 + segmentation22* 2 + segmentation23 * 3
+#' pts1 = getCentroids( segmentation1 )[,1:2]
+#' pts2 = getCentroids( segmentation2 )[,1:2]
+#' plist = list( pts1, pts2)
+#' ilist = list( list( image1 ), list( image2 ) )
+#' slist = list( segmentation1, segmentation2 )
+#' npn = paste0(tempfile(), c('i.npy','pointset.npy','heatmap.npy','coordconv.npy','segmentation.npy') )
+#' temp1 = generateDiskPointAndSegmentationData( ilist, plist, slist,
+#'    segmentationNumbers = 1:3, numpynames = npn )
+#' temp2 = generateDiskPointAndSegmentationData( ilist, plist,
+#'    segmentationNumbers = 1:3, numpynames = npn, smoothHeatMaps = 3 )
+#' temp = generateDiskPointAndSegmentationData( ilist, plist, slist,
+#'    segmentationNumbers = 1:3, numpynames = npn, smoothHeatMaps = 3 )
+#' locimg=as.antsImage( temp$images[1,,,1] )
+#' locseg=as.antsImage( temp$segmentation[1,,,3] )
+#' locseg2=as.antsImage( temp$segmentation[2,,,3] )
+#' locimg2=as.antsImage( temp$images[2,,,1] )
+#' # layout(matrix(1:4,nrow=1))
+#' # plot(locimg,locseg)
+#' # plot(locimg,as.antsImage( temp$heatmaps[1,,,3]))
+#' # plot(locimg2,locseg2)
+#' # plot(locimg2,as.antsImage( temp$heatmaps[2,,,3]))
+#' print(getCentroids( thresholdImage(as.antsImage( temp$heatmaps[1,,,1]),0.5,1) ))
+#' print(getCentroids( thresholdImage(as.antsImage( temp$heatmaps[1,,,3]),0.5,1) ))
+#' print(temp$points[1,1,])
+#' print(temp$points[1,3,])
+#' mm = makePointsImage( temp$points[1,,], getMask( locimg ) )
+#' mm2 = makePointsImage( temp$points[2,,], getMask( locimg2 ) )
+#' gg1 = thresholdImage(as.antsImage( temp$heatmaps[1,,,1]),0.5,1) %>% antsCopyImageInfo2(ri(1))
+#' gg2 = thresholdImage(as.antsImage( temp$heatmaps[1,,,2]),0.5,1) %>% antsCopyImageInfo2(ri(1))
+#' gg3 = thresholdImage(as.antsImage( temp$heatmaps[1,,,3]),0.5,1) %>% antsCopyImageInfo2(ri(1))
+#' # plot( locimg, mm )
+#' # plot( locimg, gg1*1+gg2*2+gg3*3 )
+#' @export
+generateDiskPointAndSegmentationData  <- function(
+  inputImageList,
+  pointsetList,
+  segmentationImageList,
+  segmentationNumbers,
+  selector,
+  maskIndex,
+  smoothHeatMaps = 0,
+  numpynames,
+  numberOfSimulations = 16,
+  referenceImage = NULL,
+  transformType = 'rigid',
+  noiseModel = 'additivegaussian',
+  noiseParameters = c( 0.0, 0.002 ),
+  sdSimulatedBiasField = 0.0005,
+  sdHistogramWarping = 0.0005,
+  sdAffine = 0.2  ) {
+  addCoordConv = TRUE
+  nClasses = 0
+  hasPoints = ! missing( pointsetList )
+  stopifnot( hasPoints )
+  stopifnot( ! missing( inputImageList ) )
+  hasSeg = ! missing( segmentationImageList )
+  if ( hasSeg )
+    nClasses = length( segmentationNumbers )
+  overindices = 1:length(inputImageList[[1]])
+  if (  ! missing( maskIndex ) ) overindices = overindices[ -maskIndex ]
+  np <- import("numpy")
+  idim = dim( inputImageList[[1]][[1]] )
+  myimgdim = length( idim )
+  doMask = FALSE
+  if ( addCoordConv  & ! missing( maskIndex ) )
+    stopifnot( length( numpynames ) > 3 )
+
+  X = array( dim = c( numberOfSimulations, idim, length(overindices) ) )
+  if ( hasSeg ) {
+    Y = array( dim = c( numberOfSimulations, idim, nClasses ) )
+    if ( length( grep("segmentation",numpynames) ) == 0 )
+      stop( "numpynames must have a name containing the string segmentation" )
+    segmentationnameindex = grep("segmentation",numpynames)
+  }
+  nPoints = nrow( pointsetList[[1]] )
+  for ( j in 1:length(pointsetList) )
+    stopifnot( nPoints ==  nrow( pointsetList[[j]] ) )
+  Ypt = array( dim = c( numberOfSimulations, nPoints, myimgdim ) )
+  if ( length( grep("pointset",numpynames) ) == 0 )
+    stop( "numpynames must have a name containing the string pointset" )
+  pointsetnameindex = grep("pointset",numpynames)
+  if ( smoothHeatMaps > 0 & hasPoints ) {
+    if ( length( grep("heatmap",numpynames) ) == 0 )
+      stop( "numpynames must have a name containing the string heatmap" )
+    heatmapnameindex = grep("heatmap",numpynames)
+    Yh = array( 0, dim = c( numberOfSimulations, idim, nPoints ) )
+  }
+  if (! missing( maskIndex ) ) {
+    doMask = TRUE
+    Xm = array( dim = c( numberOfSimulations, idim, 1 ) )
+    stopifnot( length( numpynames ) > 2 )
+    if ( length( grep("mask",numpynames) ) == 0 )
+      stop( "numpynames must have a name containing the string mask" )
+    masknameindex = grep("mask",numpynames)
+    }
+  Xcc = array( dim = c( numberOfSimulations, idim, length(idim) ) )
+  stopifnot( length( numpynames ) > 2 )
+  if ( length( grep("coordconv",numpynames) ) == 0 )
+    stop( "numpynames must have a name containing the string coordconv" )
+  ccnameindex = grep("coordconv",numpynames)
+
+  if ( hasPoints & ! hasSeg ) {
+    data <- dataAugmentation(
+      inputImageList[selector],
+      pointsetList = pointsetList[selector],
+      transformType = transformType,
+      numberOfSimulations = numberOfSimulations,
+      sdAffine = sdAffine,
+      noiseParameters = noiseParameters,
+      sdSimulatedBiasField = sdSimulatedBiasField,
+      sdHistogramWarping = sdHistogramWarping,
+      referenceImage = referenceImage,
+      verbose = FALSE )
+    }
+
+  if ( hasPoints & hasSeg ) {
+    data <- dataAugmentation(
+      inputImageList[selector],
+      segmentationImageList[selector],
+      pointsetList = pointsetList[selector],
+      transformType = transformType,
+      numberOfSimulations = numberOfSimulations,
+      sdAffine = sdAffine,
+      noiseParameters = noiseParameters,
+      sdSimulatedBiasField = sdSimulatedBiasField,
+      sdHistogramWarping = sdHistogramWarping,
+      referenceImage = referenceImage,
+      verbose = FALSE )
+    }
+  for ( k in 1:length(data$simulatedImages) ) {
+    myccLocal = patchMatchR::coordinateImages( data$simulatedImages[[k]][[1]] * 0 + 1 )
+    for ( jj in 1:myimgdim ) {
+      if ( myimgdim == 2 ) Xcc[k,,,jj] = as.array( myccLocal[[jj]] )
+      if ( myimgdim == 3 ) Xcc[k,,,,jj] = as.array( myccLocal[[jj]] )
+      }
+    if ( ! missing( maskIndex ) ) {
+      mymask = thresholdImage( data$simulatedImages[[k]][[maskIndex]], 0.5, Inf )
+      if ( myimgdim == 2 ) Xm[k,,,1] = as.array( mymask )
+      if ( myimgdim == 3 ) Xm[k,,,,1] = as.array( mymask )
+    }
+    for ( j in overindices ) {
+      temp = iMath( data$simulatedImages[[k]][[j]], "Normalize")
+      if ( myimgdim == 2 ) X[k, , , j ] = as.array( temp )
+      if ( myimgdim == 3 ) X[k, , , , j ] = as.array( temp )
+      }
+    if ( hasSeg ) {
+      for ( j in 1:nClasses ) {
+        temp = thresholdImage( data$simulatedSegmentationImages[[k]][[1]],
+          segmentationNumbers[j], segmentationNumbers[j] )
+        if ( myimgdim == 2 ) Y[k, , , j ] = as.array( temp )
+        if ( myimgdim == 3 ) Y[k, , , , j ] = as.array( temp )
+        }
+      }
+
+    if ( hasPoints ) {
+      mypti = data$simulatedPointsetList[[k]]
+      for ( j in 1:nPoints ) {
+        myptiloc = mypti[j,]
+        Ypt[k, j, ] = myptiloc[1:myimgdim]
+        }
+      }
+
+    if ( smoothHeatMaps > 0 & hasPoints ) {
+      mypti = data$simulatedPointsetList[[k]]
+      for ( j in 1:nPoints ) {
+        heatmap = data$simulatedImages[[k]][[1]] * 0.0
+        myptiloc = mypti[j,]
+        myptind = round( antsTransformPhysicalPointToIndex( heatmap, myptiloc[1:myimgdim] ) )
+        if ( myimgdim == 2 ) heatmap[myptind[1,1],myptind[1,2]]=1
+        if ( myimgdim == 3 ) heatmap[myptind[1,1],myptind[1,2],myptind[1,3]]=1
+        heatmap = smoothImage( heatmap, smoothHeatMaps, sigmaInPhysicalCoordinates=FALSE )
+        heatmap = heatmap / ( max( heatmap ) + 0.0001 )
+        if ( myimgdim == 2 ) Yh[k, , , j ] = as.array( heatmap )
+        if ( myimgdim == 3 ) Yh[k, , , , j ] = as.array( heatmap )
+        }
+      }
+    }
+  np$save( numpynames[1], X )
+  np$save( numpynames[pointsetnameindex], Ypt )
+  outlist = list(X,Ypt)
+  outnames = c( "images", "points")
+  if ( hasSeg ) {
+    np$save( numpynames[segmentationnameindex], Y )
+    outlist[[length(outlist)+1]] = Y
+    outnames[length(outnames)+1]='segmentation'
+  }
+  if ( doMask ) {
+    np$save( numpynames[masknameindex], Xm )
+    outlist[[length(outlist)+1]] = Xm
+    outnames[length(outnames)+1]='mask'
+    }
+  np$save( numpynames[ccnameindex], Xcc )
+  outlist[[length(outlist)+1]] = Xcc
+  outnames[length(outnames)+1]='coodconv'
+  if ( smoothHeatMaps > 0 ) {
+    np$save( numpynames[heatmapnameindex], Yh )
+    outlist[[length(outlist)+1]] = Yh
+    outnames[length(outnames)+1]='heatmaps'
+    }
+  names( outlist ) = outnames
   return( outlist  )
   }

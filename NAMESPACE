@@ -2,6 +2,7 @@
 
 export(chooseTrainingFilesToRead)
 export(generateDiskData)
+export(generateDiskPointAndSegmentationData)
 export(loadNPData)
 importFrom(ANTsRCore,antsTransformPhysicalPointToIndex)
 importFrom(ANTsRCore,getCentroids)
