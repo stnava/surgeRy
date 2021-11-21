@@ -13,13 +13,14 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 set.seed( 000 )
+myeval = FALSE
 ```
 
 # Overview of `surgeRy` point based cropping
 
 We use points to crop regions for focused segmentation.
 
-```{r setup2,echo=TRUE,eval=FALSE}
+```{r setup2,echo=TRUE,eval=myeval}
 Sys.setenv("TF_NUM_INTEROP_THREADS"=12)
 Sys.setenv("TF_NUM_INTRAOP_THREADS"=12)
 Sys.setenv("ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS"=12)
@@ -27,7 +28,7 @@ Sys.setenv("ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS"=12)
 
 See the code below for how to assemble the images and points for augmentation.
 
-```{r setupX,echo=TRUE,eval=FALSE}
+```{r setupX,echo=TRUE,eval=myeval}
 library( reticulate )
 library( ANTsR )
 library( ANTsRNet )
@@ -80,7 +81,7 @@ for ( j in sample(1:nrow(X$images),8) ) {
 this just uses a fixed training data set but it can be implemented with the
 same framework as in other examples.
 
-```{r dotrain,echo=TRUE,eval=FALSE}
+```{r dotrain,echo=TRUE,eval=myeval}
 
 unet = createUnetModel2D(
        list( NULL, NULL, 1 ),
@@ -122,7 +123,7 @@ num_epochs <- 500
 optimizerE <- tf$keras$optimizers$Adam(1e-5)
 mytype = 'float32'
 cceWeight = tf$cast( 5.0, mytype ) # could optimize for this
-batchsize = 2
+batchsize = 4
 for (epoch in epoch:num_epochs ) {
     mysam = sample( 1:nrow(X[[1]]), batchsize )
     datalist = list(
@@ -143,6 +144,32 @@ for (epoch in epoch:num_epochs ) {
     mydf[epoch,'dice'] = as.numeric( diceloss )
     mydf[epoch,'mse'] = as.numeric( lossmse )
     print( mydf[epoch,] )
+    if ( epoch %% 20 == 1 ) plot( ts( mydf ) )
     }
+
+```
+
+
+## so-called inference
+
+```{r inference,echo=TRUE,eval=myeval}
+
+Xte = generateDiskPointAndSegmentationData( ilist, plist, slist,
+   segmentationNumbers = 2, numpynames = npn, smoothHeatMaps = 0,
+   numberOfSimulations = 4,
+   sdAffine = 0.05, # adjust for inference
+   transformType = 'scaleShear',
+   cropping=c(2,32,32) )
+
+preds = predict( unet, Xte[[1]] )
+predsSMX = as.array( tf$nn$sigmoid( preds ) )
+j = 2
+predseg = as.antsImage( predsSMX[j,,,1 ]  )
+# show image, ground truth and prediction
+layout(matrix(1:3,nrow=1))
+temp =  as.antsImage( Xte[[1]][j ,,, 1 ]  )
+plot( temp )
+plot( temp, as.antsImage( Xte[[3]][j ,,, 1 ]  ) )
+plot( temp, predseg, window.overlay=c(0.5,1) )
 
 ```
