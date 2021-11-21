@@ -13,6 +13,7 @@ generateDiskPointAndSegmentationData(
   maskIndex,
   smoothHeatMaps = 0,
   numpynames,
+  cropping = NULL,
   numberOfSimulations = 16,
   referenceImage = NULL,
   transformType = "rigid",
@@ -50,6 +51,11 @@ with the word pointset. Also:
 the string segmentation if using segmentations and
 the string mask if using maskIndex and something with the word coordconv if using CC.
 should include something with the word heatmaps if using heatmaps.}
+
+\item{cropping}{a vector of size 1 plus image dimensionality where the first
+parameter indicates which landmark to target and the trailing parameters define
+the size of the cropping patch.  e.g. \code{c(2,32,32,64)} would crop a box
+of size 32 by 32 by 64 around landmark 2.}
 
 \item{numberOfSimulations}{number of output images/pointsets.  Default = 10.}
 

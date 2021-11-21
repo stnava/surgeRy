@@ -1,0 +1,146 @@
+---
+title: "surgeRy: point-based cropping and segmentation data generation example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{surgeRy: point-based cropping and segmentation data generation example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+set.seed( 000 )
+```
+
+# Overview of `surgeRy` point based cropping
+
+We use points to crop regions for focused segmentation.
+
+```{r setup2,echo=TRUE,eval=FALSE}
+Sys.setenv("TF_NUM_INTEROP_THREADS"=12)
+Sys.setenv("TF_NUM_INTRAOP_THREADS"=12)
+Sys.setenv("ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS"=12)
+```
+
+See the code below for how to assemble the images and points for augmentation.
+
+```{r setupX,echo=TRUE,eval=FALSE}
+library( reticulate )
+library( ANTsR )
+library( ANTsRNet )
+library( surgeRy )
+image1 <- antsImageRead( getANTsRData( "r16" ) )
+image2 <- antsImageRead( getANTsRData( "r27" ) )
+segmentation1 <- thresholdImage( image1, "Otsu", 3 )
+segmentation11 = thresholdImage( segmentation1, 1, 1 )
+segmentation12 = thresholdImage( segmentation1, 2, 2 )
+segmentation13 = thresholdImage( segmentation1, 3, 3 )
+segmentation11[1:128,1:256]=0
+segmentation12[1:256,1:180]=0
+segmentation13[1:256,1:128]=0
+segmentation1 = segmentation11 + segmentation12* 2 + segmentation13 * 3
+segmentation2 <- thresholdImage( image2, "Otsu", 3 )
+segmentation21 = thresholdImage( segmentation2, 1, 1 )
+segmentation22 = thresholdImage( segmentation2, 2, 2 )
+segmentation23 = thresholdImage( segmentation2, 3, 3 )
+segmentation21[1:128,1:256]=0
+segmentation22[1:256,1:180]=0
+segmentation23[1:256,1:128]=0
+segmentation2 = segmentation21 + segmentation22* 2 + segmentation23 * 3
+pts1 = getCentroids( segmentation1 )[,1:2]
+pts2 = getCentroids( segmentation2 )[,1:2]
+plist = list( pts1, pts2)
+ilist = list( list( image1 ), list( image2 ) )
+slist = list( segmentation1, segmentation2 )
+npn = paste0(tempfile(), c('i.npy','pointset.npy','coordconv.npy','segmentation.npy') )
+X = generateDiskPointAndSegmentationData( ilist, plist, slist,
+   segmentationNumbers = 2, numpynames = npn, smoothHeatMaps = 0,
+   numberOfSimulations = 128,
+   sdAffine = 0.20,
+   transformType = 'scaleShear',
+   cropping=c(2,32,32) )
+
+for ( j in sample(1:nrow(X$images),8) ) {
+  layout( matrix(1:2,nrow=1))
+  plot( as.antsImage( X$images[j,,,1] ) )
+  temper = as.antsImage( X$segmentation[j,,,1] )
+  temper = temper + 1
+  temper[1,1] = 0
+  plot( as.antsImage( X$images[j,,,1] ), temper, window.overlay=c(2,2.5) )
+  print( j )
+#  Sys.sleep( 1 )
+  }
+```
+
+## training loop
+
+this just uses a fixed training data set but it can be implemented with the
+same framework as in other examples.
+
+```{r dotrain,echo=TRUE,eval=FALSE}
+
+unet = createUnetModel2D(
+       list( NULL, NULL, 1 ),
+       numberOfOutputs = 1,
+       numberOfLayers = 4, # should optimize this wrt criterion
+       numberOfFiltersAtBaseLayer = 32, # should optimize this wrt criterion
+       convolutionKernelSize = 3, # maybe should optimize this wrt criterion
+       deconvolutionKernelSize = 2,
+       poolSize = 2,
+       strides = 2,
+       dropoutRate = 0,
+       weightDecay = 0,
+       additionalOptions = c( "nnUnetActivationStyle" ),
+       mode = c("regression")
+     )
+
+mydf = data.frame()
+epoch = 1
+wtfn=paste0('model_weights_priors2gpu', gpuid, uid,'.h5')
+csvfn = paste0('model_weights_priors2gpu', gpuid,uid,'.csv')
+
+binary_dice <- function( y_true, y_pred )
+{
+  K <- tensorflow::tf$keras$backend
+  smoothing_factor = tf$cast( 0.01, mytype )
+  y_true_f = K$flatten( y_true )
+  y_pred_f = K$flatten( y_pred )
+  intersection = K$sum( y_true_f * y_pred_f )
+  return( -1.0 * ( 2.0 * intersection + smoothing_factor )/
+        ( K$sum( y_true_f ) + K$sum( y_pred_f ) + smoothing_factor ) )
+}
+
+# Training loop parameters -----------------------------------------------------
+library( tensorflow )
+num_epochs <- 500
+# may need to change gradient step to something higher/lower depending on data
+optimizerE <- tf$keras$optimizers$Adam(1e-5)
+mytype = 'float32'
+cceWeight = tf$cast( 5.0, mytype ) # could optimize for this
+batchsize = 2
+for (epoch in epoch:num_epochs ) {
+    mysam = sample( 1:nrow(X[[1]]), batchsize )
+    datalist = list(
+        array( X[[1]][mysam,,,], dim=c(batchsize,tail(dim(X[[1]]),3)) )  %>% tf$cast( mytype ), # images
+        array( X[[3]][mysam,,,], dim=c(batchsize,tail(dim(X[[3]]),3)) ) %>% tf$cast( mytype ) # seg
+      )
+    with(tf$GradientTape(persistent = FALSE) %as% tape, {
+      preds = unet( datalist[[1]] )
+      predsSMX = tf$nn$sigmoid( preds )
+      lossmse = tf$keras$losses$mse( datalist[[2]], predsSMX ) %>% tf$reduce_mean()
+      diceloss = binary_dice( datalist[[2]], predsSMX  )
+      loss = diceloss + lossmse * cceWeight
+      })
+    unet_gradients <- tape$gradient(loss, unet$trainable_variables)
+    optimizerE$apply_gradients(purrr::transpose(list(
+        unet_gradients, unet$trainable_variables )))
+    mydf[epoch,'train_loss'] = as.numeric( loss )
+    mydf[epoch,'dice'] = as.numeric( diceloss )
+    mydf[epoch,'mse'] = as.numeric( lossmse )
+    print( mydf[epoch,] )
+    }
+
+```

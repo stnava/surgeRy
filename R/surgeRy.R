@@ -292,6 +292,10 @@ generateDiskData  <- function(
 #' the string segmentation if using segmentations and
 #' the string mask if using maskIndex and something with the word coordconv if using CC.
 #' should include something with the word heatmaps if using heatmaps.
+#' @param cropping a vector of size 1 plus image dimensionality where the first
+#' parameter indicates which landmark to target and the trailing parameters define
+#' the size of the cropping patch.  e.g. \code{c(2,32,32,64)} would crop a box
+#' of size 32 by 32 by 64 around landmark 2.
 #' @param numberOfSimulations number of output images/pointsets.  Default = 10.
 #' @param referenceImage defines the spatial domain for all output images.  If
 #' the input images do not match the spatial domain of the reference image, we
@@ -387,6 +391,7 @@ generateDiskPointAndSegmentationData  <- function(
   maskIndex,
   smoothHeatMaps = 0,
   numpynames,
+  cropping = NULL,
   numberOfSimulations = 16,
   referenceImage = NULL,
   transformType = 'rigid',
@@ -409,6 +414,25 @@ generateDiskPointAndSegmentationData  <- function(
   idim = dim( inputImageList[[1]][[1]] )
   myimgdim = length( idim )
   doMask = FALSE
+
+  nPoints = nrow( pointsetList[[1]] )
+  for ( j in 1:length(pointsetList) )
+    stopifnot( nPoints ==  nrow( pointsetList[[j]] ) )
+
+  whichPoints = 1:nPoints
+  doCrop = ! is.null( cropping )
+  if ( doCrop ) {
+    stopifnot( length( cropping ) == (myimgdim+1) )
+    idim = cropping[ -1 ]
+    whichPoints = cropping[1]
+    nPoints = length( whichPoints )
+    }
+
+  Ypt = array( dim = c( numberOfSimulations, nPoints, myimgdim ) )
+  if ( length( grep("pointset",numpynames) ) == 0 )
+    stop( "numpynames must have a name containing the string pointset" )
+  pointsetnameindex = grep("pointset",numpynames)
+
   if ( addCoordConv  & ! missing( maskIndex ) )
     stopifnot( length( numpynames ) > 3 )
 
@@ -419,13 +443,6 @@ generateDiskPointAndSegmentationData  <- function(
       stop( "numpynames must have a name containing the string segmentation" )
     segmentationnameindex = grep("segmentation",numpynames)
   }
-  nPoints = nrow( pointsetList[[1]] )
-  for ( j in 1:length(pointsetList) )
-    stopifnot( nPoints ==  nrow( pointsetList[[j]] ) )
-  Ypt = array( dim = c( numberOfSimulations, nPoints, myimgdim ) )
-  if ( length( grep("pointset",numpynames) ) == 0 )
-    stop( "numpynames must have a name containing the string pointset" )
-  pointsetnameindex = grep("pointset",numpynames)
   if ( smoothHeatMaps > 0 & hasPoints ) {
     if ( length( grep("heatmap",numpynames) ) == 0 )
       stop( "numpynames must have a name containing the string heatmap" )
@@ -474,19 +491,47 @@ generateDiskPointAndSegmentationData  <- function(
       referenceImage = referenceImage,
       verbose = FALSE )
     }
+
+  specialCrop <- function( x, pt, domainer=NULL ) {
+    if ( is.null( domainer ) ) return( x )
+    pti = round( antsTransformPhysicalPointToIndex( x, pt ) )
+    xdim = dim( x )
+    for ( k in 1:x@dimension ) {
+      if ( pti[k] < 1 ) pti[k]=1
+      if ( pti[k] > xdim[k] ) pti[k]=xdim[k]
+    }
+    mim = makeImage( domainer )
+    domainerlo = pti
+    domainerhi = pti
+    loi = cropIndices( x, domainerlo, domainerhi )
+    mim = antsCopyImageInfo2( mim, loi )
+    resampleImageToTarget( x, mim)
+  }
+
   for ( k in 1:length(data$simulatedImages) ) {
     myccLocal = patchMatchR::coordinateImages( data$simulatedImages[[k]][[1]] * 0 + 1 )
+    if ( doCrop )
+      for ( jj in 1:length( myccLocal ) )
+        myccLocal[[jj]] = specialCrop(
+          myccLocal[[jj]],
+            data$simulatedPointsetList[[k]][cropping[1],], cropping[-1] )
     for ( jj in 1:myimgdim ) {
       if ( myimgdim == 2 ) Xcc[k,,,jj] = as.array( myccLocal[[jj]] )
       if ( myimgdim == 3 ) Xcc[k,,,,jj] = as.array( myccLocal[[jj]] )
       }
     if ( ! missing( maskIndex ) ) {
       mymask = thresholdImage( data$simulatedImages[[k]][[maskIndex]], 0.5, Inf )
+      if ( doCrop )
+        mymask = specialCrop( mymask,
+          data$simulatedPointsetList[[k]][cropping[1],], cropping[-1] )
       if ( myimgdim == 2 ) Xm[k,,,1] = as.array( mymask )
       if ( myimgdim == 3 ) Xm[k,,,,1] = as.array( mymask )
     }
     for ( j in overindices ) {
       temp = iMath( data$simulatedImages[[k]][[j]], "Normalize")
+      if ( doCrop )
+        temp = specialCrop( temp,
+          data$simulatedPointsetList[[k]][cropping[1],], cropping[-1] )
       if ( myimgdim == 2 ) X[k, , , j ] = as.array( temp )
       if ( myimgdim == 3 ) X[k, , , , j ] = as.array( temp )
       }
@@ -494,6 +539,9 @@ generateDiskPointAndSegmentationData  <- function(
       for ( j in 1:nClasses ) {
         temp = thresholdImage( data$simulatedSegmentationImages[[k]][[1]],
           segmentationNumbers[j], segmentationNumbers[j] )
+        if ( doCrop )
+          temp = specialCrop( temp,
+            data$simulatedPointsetList[[k]][cropping[1],], cropping[-1] )
         if ( myimgdim == 2 ) Y[k, , , j ] = as.array( temp )
         if ( myimgdim == 3 ) Y[k, , , , j ] = as.array( temp )
         }
@@ -501,24 +549,31 @@ generateDiskPointAndSegmentationData  <- function(
 
     if ( hasPoints ) {
       mypti = data$simulatedPointsetList[[k]]
-      for ( j in 1:nPoints ) {
+      ct = 1
+      for ( j in whichPoints ) {
         myptiloc = mypti[j,]
-        Ypt[k, j, ] = myptiloc[1:myimgdim]
+        Ypt[k, ct, ] = myptiloc[1:myimgdim]
+        ct = ct + 1
         }
       }
 
     if ( smoothHeatMaps > 0 & hasPoints ) {
       mypti = data$simulatedPointsetList[[k]]
-      for ( j in 1:nPoints ) {
+      ct = 1
+      for ( j in whichPoints ) {
         heatmap = data$simulatedImages[[k]][[1]] * 0.0
+        if ( doCrop )
+          heatmap = specialCrop( heatmap,
+            data$simulatedPointsetList[[k]][cropping[1],], cropping[-1] )
         myptiloc = mypti[j,]
         myptind = round( antsTransformPhysicalPointToIndex( heatmap, myptiloc[1:myimgdim] ) )
         if ( myimgdim == 2 ) heatmap[myptind[1,1],myptind[1,2]]=1
         if ( myimgdim == 3 ) heatmap[myptind[1,1],myptind[1,2],myptind[1,3]]=1
         heatmap = smoothImage( heatmap, smoothHeatMaps, sigmaInPhysicalCoordinates=FALSE )
         heatmap = heatmap / ( max( heatmap ) + 0.0001 )
-        if ( myimgdim == 2 ) Yh[k, , , j ] = as.array( heatmap )
-        if ( myimgdim == 3 ) Yh[k, , , , j ] = as.array( heatmap )
+        if ( myimgdim == 2 ) Yh[k, , , ct ] = as.array( heatmap )
+        if ( myimgdim == 3 ) Yh[k, , , , ct ] = as.array( heatmap )
+        ct = ct + 1
         }
       }
     }
