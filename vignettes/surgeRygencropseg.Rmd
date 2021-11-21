@@ -99,6 +99,8 @@ unet = createUnetModel2D(
 
 mydf = data.frame()
 epoch = 1
+gpuid='ZZZ'
+uid='QQQ'
 wtfn=paste0('model_weights_priors2gpu', gpuid, uid,'.h5')
 csvfn = paste0('model_weights_priors2gpu', gpuid,uid,'.csv')
 

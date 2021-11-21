@@ -160,69 +160,70 @@
 <h2 class="hasAnchor">
 <a href="#training-loop" class="anchor"></a>training loop</h2>
 <p>this just uses a fixed training data set but it can be implemented with the same framework as in other examples.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"></a>
-<a class="sourceLine" id="cb3-2" data-line-number="2">unet =<span class="st"> </span><span class="kw">createUnetModel2D</span>(</a>
-<a class="sourceLine" id="cb3-3" data-line-number="3">       <span class="kw">list</span>( <span class="ot">NULL</span>, <span class="ot">NULL</span>, <span class="dv">1</span> ),</a>
-<a class="sourceLine" id="cb3-4" data-line-number="4">       <span class="dt">numberOfOutputs =</span> <span class="dv">1</span>,</a>
-<a class="sourceLine" id="cb3-5" data-line-number="5">       <span class="dt">numberOfLayers =</span> <span class="dv">4</span>, <span class="co"># should optimize this wrt criterion</span></a>
-<a class="sourceLine" id="cb3-6" data-line-number="6">       <span class="dt">numberOfFiltersAtBaseLayer =</span> <span class="dv">32</span>, <span class="co"># should optimize this wrt criterion</span></a>
-<a class="sourceLine" id="cb3-7" data-line-number="7">       <span class="dt">convolutionKernelSize =</span> <span class="dv">3</span>, <span class="co"># maybe should optimize this wrt criterion</span></a>
-<a class="sourceLine" id="cb3-8" data-line-number="8">       <span class="dt">deconvolutionKernelSize =</span> <span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb3-9" data-line-number="9">       <span class="dt">poolSize =</span> <span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb3-10" data-line-number="10">       <span class="dt">strides =</span> <span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb3-11" data-line-number="11">       <span class="dt">dropoutRate =</span> <span class="dv">0</span>,</a>
-<a class="sourceLine" id="cb3-12" data-line-number="12">       <span class="dt">weightDecay =</span> <span class="dv">0</span>,</a>
-<a class="sourceLine" id="cb3-13" data-line-number="13">       <span class="dt">additionalOptions =</span> <span class="kw">c</span>( <span class="st">"nnUnetActivationStyle"</span> ),</a>
-<a class="sourceLine" id="cb3-14" data-line-number="14">       <span class="dt">mode =</span> <span class="kw">c</span>(<span class="st">"regression"</span>)</a>
-<a class="sourceLine" id="cb3-15" data-line-number="15">     )</a>
-<a class="sourceLine" id="cb3-16" data-line-number="16"></a>
-<a class="sourceLine" id="cb3-17" data-line-number="17">mydf =<span class="st"> </span><span class="kw">data.frame</span>()</a>
-<a class="sourceLine" id="cb3-18" data-line-number="18">epoch =<span class="st"> </span><span class="dv">1</span></a>
-<a class="sourceLine" id="cb3-19" data-line-number="19">wtfn=<span class="kw">paste0</span>(<span class="st">'model_weights_priors2gpu'</span>, gpuid, uid,<span class="st">'.h5'</span>)</a>
-<a class="sourceLine" id="cb3-20" data-line-number="20">csvfn =<span class="st"> </span><span class="kw">paste0</span>(<span class="st">'model_weights_priors2gpu'</span>, gpuid,uid,<span class="st">'.csv'</span>)</a>
-<a class="sourceLine" id="cb3-21" data-line-number="21"></a>
-<a class="sourceLine" id="cb3-22" data-line-number="22">binary_dice &lt;-<span class="st"> </span><span class="cf">function</span>( y_true, y_pred )</a>
-<a class="sourceLine" id="cb3-23" data-line-number="23">{</a>
-<a class="sourceLine" id="cb3-24" data-line-number="24">  K &lt;-<span class="st"> </span>tensorflow<span class="op">::</span>tf<span class="op">$</span>keras<span class="op">$</span>backend</a>
-<a class="sourceLine" id="cb3-25" data-line-number="25">  smoothing_factor =<span class="st"> </span>tf<span class="op">$</span><span class="kw">cast</span>( <span class="fl">0.01</span>, mytype )</a>
-<a class="sourceLine" id="cb3-26" data-line-number="26">  y_true_f =<span class="st"> </span>K<span class="op">$</span><span class="kw">flatten</span>( y_true )</a>
-<a class="sourceLine" id="cb3-27" data-line-number="27">  y_pred_f =<span class="st"> </span>K<span class="op">$</span><span class="kw">flatten</span>( y_pred )</a>
-<a class="sourceLine" id="cb3-28" data-line-number="28">  intersection =<span class="st"> </span>K<span class="op">$</span><span class="kw">sum</span>( y_true_f <span class="op">*</span><span class="st"> </span>y_pred_f )</a>
-<a class="sourceLine" id="cb3-29" data-line-number="29">  <span class="kw">return</span>( <span class="fl">-1.0</span> <span class="op">*</span><span class="st"> </span>( <span class="fl">2.0</span> <span class="op">*</span><span class="st"> </span>intersection <span class="op">+</span><span class="st"> </span>smoothing_factor )<span class="op">/</span></a>
-<a class="sourceLine" id="cb3-30" data-line-number="30"><span class="st">        </span>( K<span class="op">$</span><span class="kw">sum</span>( y_true_f ) <span class="op">+</span><span class="st"> </span>K<span class="op">$</span><span class="kw">sum</span>( y_pred_f ) <span class="op">+</span><span class="st"> </span>smoothing_factor ) )</a>
-<a class="sourceLine" id="cb3-31" data-line-number="31">}</a>
-<a class="sourceLine" id="cb3-32" data-line-number="32"></a>
-<a class="sourceLine" id="cb3-33" data-line-number="33"><span class="co"># Training loop parameters -----------------------------------------------------</span></a>
-<a class="sourceLine" id="cb3-34" data-line-number="34"><span class="kw">library</span>( tensorflow )</a>
-<a class="sourceLine" id="cb3-35" data-line-number="35">num_epochs &lt;-<span class="st"> </span><span class="dv">500</span></a>
-<a class="sourceLine" id="cb3-36" data-line-number="36"><span class="co"># may need to change gradient step to something higher/lower depending on data</span></a>
-<a class="sourceLine" id="cb3-37" data-line-number="37">optimizerE &lt;-<span class="st"> </span>tf<span class="op">$</span>keras<span class="op">$</span>optimizers<span class="op">$</span><span class="kw">Adam</span>(<span class="fl">1e-5</span>)</a>
-<a class="sourceLine" id="cb3-38" data-line-number="38">mytype =<span class="st"> 'float32'</span></a>
-<a class="sourceLine" id="cb3-39" data-line-number="39">cceWeight =<span class="st"> </span>tf<span class="op">$</span><span class="kw">cast</span>( <span class="fl">5.0</span>, mytype ) <span class="co"># could optimize for this</span></a>
-<a class="sourceLine" id="cb3-40" data-line-number="40">batchsize =<span class="st"> </span><span class="dv">2</span></a>
-<a class="sourceLine" id="cb3-41" data-line-number="41"><span class="cf">for</span> (epoch <span class="cf">in</span> epoch<span class="op">:</span>num_epochs ) {</a>
-<a class="sourceLine" id="cb3-42" data-line-number="42">    mysam =<span class="st"> </span><span class="kw">sample</span>( <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(X[[<span class="dv">1</span>]]), batchsize )</a>
-<a class="sourceLine" id="cb3-43" data-line-number="43">    datalist =<span class="st"> </span><span class="kw">list</span>(</a>
-<a class="sourceLine" id="cb3-44" data-line-number="44">        <span class="kw">array</span>( X[[<span class="dv">1</span>]][mysam,,,], <span class="dt">dim=</span><span class="kw">c</span>(batchsize,<span class="kw">tail</span>(<span class="kw">dim</span>(X[[<span class="dv">1</span>]]),<span class="dv">3</span>)) )  <span class="op">%&gt;%</span><span class="st"> </span>tf<span class="op">$</span><span class="kw">cast</span>( mytype ), <span class="co"># images</span></a>
-<a class="sourceLine" id="cb3-45" data-line-number="45">        <span class="kw">array</span>( X[[<span class="dv">3</span>]][mysam,,,], <span class="dt">dim=</span><span class="kw">c</span>(batchsize,<span class="kw">tail</span>(<span class="kw">dim</span>(X[[<span class="dv">3</span>]]),<span class="dv">3</span>)) ) <span class="op">%&gt;%</span><span class="st"> </span>tf<span class="op">$</span><span class="kw">cast</span>( mytype ) <span class="co"># seg</span></a>
-<a class="sourceLine" id="cb3-46" data-line-number="46">      )</a>
-<a class="sourceLine" id="cb3-47" data-line-number="47">    <span class="kw">with</span>(tf<span class="op">$</span><span class="kw">GradientTape</span>(<span class="dt">persistent =</span> <span class="ot">FALSE</span>) <span class="op">%as%</span><span class="st"> </span>tape, {</a>
-<a class="sourceLine" id="cb3-48" data-line-number="48">      preds =<span class="st"> </span><span class="kw">unet</span>( datalist[[<span class="dv">1</span>]] )</a>
-<a class="sourceLine" id="cb3-49" data-line-number="49">      predsSMX =<span class="st"> </span>tf<span class="op">$</span>nn<span class="op">$</span><span class="kw">sigmoid</span>( preds )</a>
-<a class="sourceLine" id="cb3-50" data-line-number="50">      lossmse =<span class="st"> </span>tf<span class="op">$</span>keras<span class="op">$</span>losses<span class="op">$</span><span class="kw">mse</span>( datalist[[<span class="dv">2</span>]], predsSMX ) <span class="op">%&gt;%</span><span class="st"> </span>tf<span class="op">$</span><span class="kw">reduce_mean</span>()</a>
-<a class="sourceLine" id="cb3-51" data-line-number="51">      diceloss =<span class="st"> </span><span class="kw">binary_dice</span>( datalist[[<span class="dv">2</span>]], predsSMX  )</a>
-<a class="sourceLine" id="cb3-52" data-line-number="52">      loss =<span class="st"> </span>diceloss <span class="op">+</span><span class="st"> </span>lossmse <span class="op">*</span><span class="st"> </span>cceWeight</a>
-<a class="sourceLine" id="cb3-53" data-line-number="53">      })</a>
-<a class="sourceLine" id="cb3-54" data-line-number="54">    unet_gradients &lt;-<span class="st"> </span>tape<span class="op">$</span><span class="kw">gradient</span>(loss, unet<span class="op">$</span>trainable_variables)</a>
-<a class="sourceLine" id="cb3-55" data-line-number="55">    optimizerE<span class="op">$</span><span class="kw">apply_gradients</span>(purrr<span class="op">::</span><span class="kw">transpose</span>(<span class="kw">list</span>(</a>
-<a class="sourceLine" id="cb3-56" data-line-number="56">        unet_gradients, unet<span class="op">$</span>trainable_variables )))</a>
-<a class="sourceLine" id="cb3-57" data-line-number="57">    mydf[epoch,<span class="st">'train_loss'</span>] =<span class="st"> </span><span class="kw">as.numeric</span>( loss )</a>
-<a class="sourceLine" id="cb3-58" data-line-number="58">    mydf[epoch,<span class="st">'dice'</span>] =<span class="st"> </span><span class="kw">as.numeric</span>( diceloss )</a>
-<a class="sourceLine" id="cb3-59" data-line-number="59">    mydf[epoch,<span class="st">'mse'</span>] =<span class="st"> </span><span class="kw">as.numeric</span>( lossmse )</a>
-<a class="sourceLine" id="cb3-60" data-line-number="60">    }</a>
-<a class="sourceLine" id="cb3-61" data-line-number="61">    <span class="kw">print</span>( mydf[epoch,] )</a>
-<a class="sourceLine" id="cb3-62" data-line-number="62"><span class="co">#    write.csv( mydf, csvfn, row.names=FALSE )</span></a>
-<a class="sourceLine" id="cb3-63" data-line-number="63">  <span class="er">}</span></a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="va">unet</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/ANTsRNet/man/createUnetModel2D.html">createUnetModel2D</a></span><span class="op">(</span>
+       <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span> <span class="cn">NULL</span>, <span class="cn">NULL</span>, <span class="fl">1</span> <span class="op">)</span>,
+       numberOfOutputs <span class="op">=</span> <span class="fl">1</span>,
+       numberOfLayers <span class="op">=</span> <span class="fl">4</span>, <span class="co"># should optimize this wrt criterion</span>
+       numberOfFiltersAtBaseLayer <span class="op">=</span> <span class="fl">32</span>, <span class="co"># should optimize this wrt criterion</span>
+       convolutionKernelSize <span class="op">=</span> <span class="fl">3</span>, <span class="co"># maybe should optimize this wrt criterion</span>
+       deconvolutionKernelSize <span class="op">=</span> <span class="fl">2</span>,
+       poolSize <span class="op">=</span> <span class="fl">2</span>,
+       strides <span class="op">=</span> <span class="fl">2</span>,
+       dropoutRate <span class="op">=</span> <span class="fl">0</span>,
+       weightDecay <span class="op">=</span> <span class="fl">0</span>,
+       additionalOptions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span> <span class="st">"nnUnetActivationStyle"</span> <span class="op">)</span>,
+       mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"regression"</span><span class="op">)</span>
+     <span class="op">)</span>
+
+<span class="va">mydf</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="op">)</span>
+<span class="va">epoch</span> <span class="op">=</span> <span class="fl">1</span>
+<span class="va">gpuid</span><span class="op">=</span><span class="st">'ZZZ'</span>
+<span class="va">uid</span><span class="op">=</span><span class="st">'QQQ'</span>
+<span class="va">wtfn</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">'model_weights_priors2gpu'</span>, <span class="va">gpuid</span>, <span class="va">uid</span>,<span class="st">'.h5'</span><span class="op">)</span>
+<span class="va">csvfn</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">'model_weights_priors2gpu'</span>, <span class="va">gpuid</span>,<span class="va">uid</span>,<span class="st">'.csv'</span><span class="op">)</span>
+
+<span class="va">binary_dice</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span> <span class="va">y_true</span>, <span class="va">y_pred</span> <span class="op">)</span>
+<span class="op">{</span>
+  <span class="va">K</span> <span class="op">&lt;-</span> <span class="fu">tensorflow</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/tensorflow/man/tf.html">tf</a></span><span class="op">$</span><span class="va">keras</span><span class="op">$</span><span class="va">backend</span>
+  <span class="va">smoothing_factor</span> <span class="op">=</span> <span class="va">tf</span><span class="op">$</span><span class="fu">cast</span><span class="op">(</span> <span class="fl">0.01</span>, <span class="va">mytype</span> <span class="op">)</span>
+  <span class="va">y_true_f</span> <span class="op">=</span> <span class="va">K</span><span class="op">$</span><span class="fu">flatten</span><span class="op">(</span> <span class="va">y_true</span> <span class="op">)</span>
+  <span class="va">y_pred_f</span> <span class="op">=</span> <span class="va">K</span><span class="op">$</span><span class="fu">flatten</span><span class="op">(</span> <span class="va">y_pred</span> <span class="op">)</span>
+  <span class="va">intersection</span> <span class="op">=</span> <span class="va">K</span><span class="op">$</span><span class="fu">sum</span><span class="op">(</span> <span class="va">y_true_f</span> <span class="op">*</span> <span class="va">y_pred_f</span> <span class="op">)</span>
+  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span> <span class="op">-</span><span class="fl">1.0</span> <span class="op">*</span> <span class="op">(</span> <span class="fl">2.0</span> <span class="op">*</span> <span class="va">intersection</span> <span class="op">+</span> <span class="va">smoothing_factor</span> <span class="op">)</span><span class="op">/</span>
+        <span class="op">(</span> <span class="va">K</span><span class="op">$</span><span class="fu">sum</span><span class="op">(</span> <span class="va">y_true_f</span> <span class="op">)</span> <span class="op">+</span> <span class="va">K</span><span class="op">$</span><span class="fu">sum</span><span class="op">(</span> <span class="va">y_pred_f</span> <span class="op">)</span> <span class="op">+</span> <span class="va">smoothing_factor</span> <span class="op">)</span> <span class="op">)</span>
+<span class="op">}</span>
+
+<span class="co"># Training loop parameters -----------------------------------------------------</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span> <span class="va"><a href="https://github.com/rstudio/tensorflow">tensorflow</a></span> <span class="op">)</span>
+<span class="va">num_epochs</span> <span class="op">&lt;-</span> <span class="fl">500</span>
+<span class="co"># may need to change gradient step to something higher/lower depending on data</span>
+<span class="va">optimizerE</span> <span class="op">&lt;-</span> <span class="va">tf</span><span class="op">$</span><span class="va">keras</span><span class="op">$</span><span class="va">optimizers</span><span class="op">$</span><span class="fu">Adam</span><span class="op">(</span><span class="fl">1e-5</span><span class="op">)</span>
+<span class="va">mytype</span> <span class="op">=</span> <span class="st">'float32'</span>
+<span class="va">cceWeight</span> <span class="op">=</span> <span class="va">tf</span><span class="op">$</span><span class="fu">cast</span><span class="op">(</span> <span class="fl">5.0</span>, <span class="va">mytype</span> <span class="op">)</span> <span class="co"># could optimize for this</span>
+<span class="va">batchsize</span> <span class="op">=</span> <span class="fl">2</span>
+<span class="kw">for</span> <span class="op">(</span><span class="va">epoch</span> <span class="kw">in</span> <span class="va">epoch</span><span class="op">:</span><span class="va">num_epochs</span> <span class="op">)</span> <span class="op">{</span>
+    <span class="va">mysam</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">X</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, <span class="va">batchsize</span> <span class="op">)</span>
+    <span class="va">datalist</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+        <span class="fu"><a href="https://rdrr.io/r/base/array.html">array</a></span><span class="op">(</span> <span class="va">X</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">mysam</span>,,,<span class="op">]</span>, dim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">batchsize</span>,<span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">X</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span> <span class="op">)</span>  <span class="op">%&gt;%</span> <span class="va">tf</span><span class="op">$</span><span class="fu">cast</span><span class="op">(</span> <span class="va">mytype</span> <span class="op">)</span>, <span class="co"># images</span>
+        <span class="fu"><a href="https://rdrr.io/r/base/array.html">array</a></span><span class="op">(</span> <span class="va">X</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">mysam</span>,,,<span class="op">]</span>, dim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">batchsize</span>,<span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">X</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span> <span class="op">)</span> <span class="op">%&gt;%</span> <span class="va">tf</span><span class="op">$</span><span class="fu">cast</span><span class="op">(</span> <span class="va">mytype</span> <span class="op">)</span> <span class="co"># seg</span>
+      <span class="op">)</span>
+    <span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">tf</span><span class="op">$</span><span class="fu">GradientTape</span><span class="op">(</span>persistent <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">%as%</span> <span class="va">tape</span>, <span class="op">{</span>
+      <span class="va">preds</span> <span class="op">=</span> <span class="fu">unet</span><span class="op">(</span> <span class="va">datalist</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">)</span>
+      <span class="va">predsSMX</span> <span class="op">=</span> <span class="va">tf</span><span class="op">$</span><span class="va">nn</span><span class="op">$</span><span class="fu">sigmoid</span><span class="op">(</span> <span class="va">preds</span> <span class="op">)</span>
+      <span class="va">lossmse</span> <span class="op">=</span> <span class="va">tf</span><span class="op">$</span><span class="va">keras</span><span class="op">$</span><span class="va">losses</span><span class="op">$</span><span class="fu">mse</span><span class="op">(</span> <span class="va">datalist</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>, <span class="va">predsSMX</span> <span class="op">)</span> <span class="op">%&gt;%</span> <span class="va">tf</span><span class="op">$</span><span class="fu">reduce_mean</span><span class="op">(</span><span class="op">)</span>
+      <span class="va">diceloss</span> <span class="op">=</span> <span class="fu">binary_dice</span><span class="op">(</span> <span class="va">datalist</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>, <span class="va">predsSMX</span>  <span class="op">)</span>
+      <span class="va">loss</span> <span class="op">=</span> <span class="va">diceloss</span> <span class="op">+</span> <span class="va">lossmse</span> <span class="op">*</span> <span class="va">cceWeight</span>
+      <span class="op">}</span><span class="op">)</span>
+    <span class="va">unet_gradients</span> <span class="op">&lt;-</span> <span class="va">tape</span><span class="op">$</span><span class="fu">gradient</span><span class="op">(</span><span class="va">loss</span>, <span class="va">unet</span><span class="op">$</span><span class="va">trainable_variables</span><span class="op">)</span>
+    <span class="va">optimizerE</span><span class="op">$</span><span class="fu">apply_gradients</span><span class="op">(</span><span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/transpose.html">transpose</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+        <span class="va">unet_gradients</span>, <span class="va">unet</span><span class="op">$</span><span class="va">trainable_variables</span> <span class="op">)</span><span class="op">)</span><span class="op">)</span>
+    <span class="va">mydf</span><span class="op">[</span><span class="va">epoch</span>,<span class="st">'train_loss'</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span> <span class="va">loss</span> <span class="op">)</span>
+    <span class="va">mydf</span><span class="op">[</span><span class="va">epoch</span>,<span class="st">'dice'</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span> <span class="va">diceloss</span> <span class="op">)</span>
+    <span class="va">mydf</span><span class="op">[</span><span class="va">epoch</span>,<span class="st">'mse'</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span> <span class="va">lossmse</span> <span class="op">)</span>
+    <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span> <span class="va">mydf</span><span class="op">[</span><span class="va">epoch</span>,<span class="op">]</span> <span class="op">)</span>
+    <span class="op">}</span></code></pre></div>
 </div>
 </div>
   </div>

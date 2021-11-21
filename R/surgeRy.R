@@ -113,7 +113,7 @@ loadNPData <- function( numpynames ) {
 #'
 #' @return list of array
 #' @author Avants BB
-#' @importFrom ANTsRCore getCentroids iMath thresholdImage
+#' @importFrom ANTsRCore getCentroids iMath thresholdImage antsCopyImageInfo2 cropIndices makeImage resampleImageToTarget
 #' @importFrom ANTsRCore smoothImage antsTransformPhysicalPointToIndex
 #' @importFrom R.utils lastModified
 #' @importFrom patchMatchR coordinateImages
