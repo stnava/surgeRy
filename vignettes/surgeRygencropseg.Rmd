@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 set.seed( 000 )
-myeval = FALSE
+if ( ! exists( "myeval" ) ) myeval = FALSE
 ```
 
 # Overview of `surgeRy` point based cropping
