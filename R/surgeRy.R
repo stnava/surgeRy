@@ -266,6 +266,36 @@ generateDiskData  <- function(
   }
 
 
+#' special cropping
+#'
+#' cropping method specialized for our data augmenation approach
+#' @param x input antsImage
+#' @param pt point in physical space around which we crop
+#' @param domainer vector of dimensionality equal to the image indicating the
+#' size of cropped region
+#' @return cropped region
+#' @author Avants BB
+#' @examples
+#' library( ANTsR )
+#' specialCrop( ri(1), c(60,66), c(32,32) )
+#' @export
+specialCrop <- function( x, pt, domainer=NULL ) {
+  if ( is.null( domainer ) ) return( x )
+  pti = round( antsTransformPhysicalPointToIndex( x, pt ) )
+  xdim = dim( x )
+  for ( k in 1:x@dimension ) {
+    if ( pti[k] < 1 ) pti[k]=1
+    if ( pti[k] > xdim[k] ) pti[k]=xdim[k]
+  }
+  mim = makeImage( domainer )
+  domainerlo = pti
+  domainerhi = pti
+  loi = cropIndices( x, domainerlo, domainerhi )
+  mim = antsCopyImageInfo2( mim, loi )
+  resampleImageToTarget( x, mim )
+}
+
+
 #' Generate point set and image augmentation data with on disk storage
 #'
 #' This assumes that at least images and point sets are passed in - segmentation
@@ -491,22 +521,6 @@ generateDiskPointAndSegmentationData  <- function(
       referenceImage = referenceImage,
       verbose = FALSE )
     }
-
-  specialCrop <- function( x, pt, domainer=NULL ) {
-    if ( is.null( domainer ) ) return( x )
-    pti = round( antsTransformPhysicalPointToIndex( x, pt ) )
-    xdim = dim( x )
-    for ( k in 1:x@dimension ) {
-      if ( pti[k] < 1 ) pti[k]=1
-      if ( pti[k] > xdim[k] ) pti[k]=xdim[k]
-    }
-    mim = makeImage( domainer )
-    domainerlo = pti
-    domainerhi = pti
-    loi = cropIndices( x, domainerlo, domainerhi )
-    mim = antsCopyImageInfo2( mim, loi )
-    resampleImageToTarget( x, mim)
-  }
 
   for ( k in 1:length(data$simulatedImages) ) {
     myccLocal = patchMatchR::coordinateImages( data$simulatedImages[[k]][[1]] * 0 + 1 )

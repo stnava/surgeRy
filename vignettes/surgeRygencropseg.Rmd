@@ -152,24 +152,37 @@ for (epoch in epoch:num_epochs ) {
 
 ## so-called inference
 
-```{r inference,echo=TRUE,eval=myeval}
+here is how one might do inference on new data.
 
-Xte = generateDiskPointAndSegmentationData( ilist, plist, slist,
+note that some of these parameters do not match the training setup.
+
+that may be ok in some cases but is not generally recommended.
+
+```{r inference,echo=TRUE,eval=myeval}
+whichPoint = 3
+patchSize = c( 128, 128 )
+whichPoint = 2
+patchSize = c( 32, 48 )
+Xte = generateDiskPointAndSegmentationData( ilist[1], plist[1], slist[1],
    segmentationNumbers = 2, numpynames = npn, smoothHeatMaps = 0,
-   numberOfSimulations = 4,
-   sdAffine = 0.05, # adjust for inference
+   numberOfSimulations = 1,
+   sdAffine = 0.0, # adjust for inference
    transformType = 'scaleShear',
-   cropping=c(2,32,32) )
+   cropping=c(whichPoint,patchSize) )
+
+# define the physical space for the sub-image
+# needs to match the augmentation code
+physspace = specialCrop( ilist[[1]][[1]], plist[[1]][whichPoint,], patchSize)
 
 preds = predict( unet, Xte[[1]] )
 predsSMX = as.array( tf$nn$sigmoid( preds ) )
-j = 2
-predseg = as.antsImage( predsSMX[j,,,1 ]  )
-# show image, ground truth and prediction
-layout(matrix(1:3,nrow=1))
-temp =  as.antsImage( Xte[[1]][j ,,, 1 ]  )
-plot( temp )
-plot( temp, as.antsImage( Xte[[3]][j ,,, 1 ]  ) )
-plot( temp, predseg, window.overlay=c(0.5,1) )
+j = 1
+predseg = as.antsImage( predsSMX[j,,,1 ]  ) %>% antsCopyImageInfo2( physspace )
 
+# show image and prediction
+layout(matrix(1:2,nrow=1))
+predsegdecrop = resampleImageToTarget( predseg, ilist[[1]][[1]] )
+bint = thresholdImage(predsegdecrop,0.5,1)
+plot(ilist[[1]][[1]],predsegdecrop,window.overlay=c(0.1,1))
+plot(ilist[[1]][[1]],bint,window.overlay=c(0.5,1))
 ```
