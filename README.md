@@ -6,8 +6,9 @@ documentation page [here](https://stnava.github.io/surgeRy/)
 
 ## deep learning training
 
-Common tasks for
+Common tasks for data augmentation of images, segmentations and points.
 
+Appropriate for cascaded models.
 
 ## Installing
 
