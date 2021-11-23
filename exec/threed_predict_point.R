@@ -61,8 +61,8 @@ epoch = 1
 for ( ptwt in c( 0.001, 0.005, 0.01 ) ) {
   if ( ptwt == 0.01 ) unetLM = unetLM1
   ptWeight = tf$cast( ptwt, mytype )
-  num_epochs <- 1000
-  if ( ptwt == 0.01 ) num_epochs = 15000
+  num_epochs = 500
+  if ( ptwt == 0.01 ) num_epochs = 1000
   optimizerE <- tf$keras$optimizers$Adam(1.e-6)
   batchsize = 2
   for (epoch in 1:num_epochs ) {
@@ -93,6 +93,7 @@ for ( ptwt in c( 0.001, 0.005, 0.01 ) ) {
     mydf[ct,'train_ptloss'] = as.numeric( losspt )
     mydf[ct,'train_htloss'] = as.numeric( lossht )
     mydf[ct,'ptWeight'] = as.numeric( ptWeight )
+    mydf[ct,'trainData'] = locfns[1]
     if( epoch > 3 & epoch %% 10 == 0 ) {
       with(tf$device("/cpu:0"), {
         preds = predict( unetLM, Xte[c(1,3:4)] )
@@ -115,7 +116,7 @@ for ( ptwt in c( 0.001, 0.005, 0.01 ) ) {
   }
 }
 
-derka
+derkaderkaderkaderkaderkaderkaderkaderkaderkaderkaderkaderkaderkaderkaderkaderka
 
 # ----traintestcurves,eval=FALSE,echo=TRUE-------------------------------------
 mydf = read.csv( paste0( "lm_weights_gpu", gpuid, ".csv" ) )
