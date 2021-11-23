@@ -13,6 +13,7 @@ library( patchMatchR )
 library( surgeRy )
 np <- import("numpy")
 mytype = "float32"
+smoothHeat = 3.0
 downsam = 4   # downsamples images
 # collect your images - a list of lists - multiple entries in each list are fine
 mydf = read.csv( "manual/ba_notes.csv" )
@@ -23,7 +24,7 @@ ilist = list()
 slist = list()
 plist = list()
 for ( k in 1:nrow( mydf ) ) {
-  image = antsImageRead( ifns[k] ) %>% resampleImage( c( 84, 128, 128 ), useVoxels=TRUE )
+  image = antsImageRead( ifns[k] ) %>% resampleImage( c( 88, 128, 128 ), useVoxels=TRUE )
   image = iMath( image, "Normalize" )
   mask = thresholdImage( image, 0.01, 1.0 )
   segL = antsImageRead( sfnsL[k] )
@@ -37,11 +38,11 @@ for ( k in 1:nrow( mydf ) ) {
 # identify the number of segmentation classes
 isTrain = c( rep(TRUE,length(ilist)-1), FALSE )
 
-nFiles = 5
+nFiles = 8
 if ( ! exists( "uid" ) )
   uid = paste0("LM",sample(1:1000000,nFiles),"Z")
-types = c("images.npy", "pointset.npy", "mask.npy", "coordconv.npy" )
-#  "heatmap.npy" ) # "segmentation.npy" )
+types = c("images.npy", "pointset.npy", "mask.npy", "coordconv.npy",
+  "heatmap.npy" ) # "segmentation.npy" )
 nmats = length(types) # 5 arrays out
 trainTestFileNames = data.frame( matrix("",nrow=nFiles,ncol=nmats*2))
 colnamesTT = c(
@@ -62,7 +63,7 @@ gg = generateDiskPointAndSegmentationData(
     inputImageList = ilist,
     pointsetList = plist,
     selector = !isTrain,
-    smoothHeatMaps = 0.0,
+    smoothHeatMaps = smoothHeat,
     maskIndex = 2,
     transformType = "scaleShear",
     noiseParameters = c(0, 0.05),
@@ -73,11 +74,11 @@ gg = generateDiskPointAndSegmentationData(
     numberOfSimulations = 8
     )
 # visualize example augmented images
-layout( matrix(1:8,nrow=2))
-for ( k in 1:8 ) {
-  temp = as.antsImage( gg[[1]][k,,,,1] )
-  plot( temp )
-  }
+# layout( matrix(1:8,nrow=2))
+# for ( k in 1:8 ) {
+#  temp = as.antsImage( gg[[1]][k,,,,1] )
+#  plot( temp )
+#  }
 
 while( TRUE ) {
   for ( k in 1:nFiles ) {
@@ -87,7 +88,7 @@ while( TRUE ) {
         inputImageList = ilist,
         pointsetList = plist,
         selector = isTrain,
-#        smoothHeatMaps = 3.0,
+        smoothHeatMaps = smoothHeat,
         maskIndex = 2,
         transformType = "scaleShear",
         noiseParameters = c(0, 0.05),
@@ -95,7 +96,7 @@ while( TRUE ) {
         sdHistogramWarping = 0.01,
         sdAffine = 0.1,
         numpynames = trnfilename,
-        numberOfSimulations = 48
+        numberOfSimulations = 32
         )
     }
   }

@@ -57,12 +57,13 @@ csvfn = paste0('lm_weights_gpu', gpuid,'.csv')
 
 
 # ----training,echo=TRUE,eval=FALSE--------------------------------------------
+mydf = data.frame()
 epoch = 1
 for ( ptwt in c( 0.001, 0.005, 0.01 ) ) {
   if ( ptwt == 0.01 ) unetLM = unetLM1
   ptWeight = tf$cast( ptwt, mytype )
-  num_epochs <- 100
-  if ( ptwt == 0.01 ) num_epochs = 1500
+  num_epochs <- 1000
+  if ( ptwt == 0.01 ) num_epochs = 15000
   optimizerE <- tf$keras$optimizers$Adam(1.e-6)
   batchsize = 2
   for (epoch in 1:num_epochs ) {
@@ -82,7 +83,7 @@ for ( ptwt in c( 0.001, 0.005, 0.01 ) ) {
         dim=c(batchsize,tail(dim(Xtr[[jj]]),4)) ) %>% tf$cast( mytype )
     with(tf$GradientTape(persistent = FALSE) %as% tape, {
       preds = unetLM( datalist[c(1,3:4)] )
-      lossht = 0.0 # tf$keras$losses$mse( datalist[[5]], preds[[1]] ) %>% tf$reduce_mean( )
+      lossht = tf$keras$losses$mse( datalist[[5]], preds[[1]] ) %>% tf$reduce_mean( )
       losspt = tf$keras$losses$mse( datalist[[2]], preds[[2]] ) %>% tf$reduce_mean( )
       loss = losspt * ptWeight + lossht
       })
@@ -96,7 +97,7 @@ for ( ptwt in c( 0.001, 0.005, 0.01 ) ) {
     if( epoch > 3 & epoch %% 10 == 0 ) {
       with(tf$device("/cpu:0"), {
         preds = predict( unetLM, Xte[c(1,3:4)] )
-        lossht = 0.0 # tf$keras$losses$mse( Xte[[5]], preds[[1]] ) %>% tf$reduce_mean( )
+        lossht = tf$keras$losses$mse( Xte[[5]], preds[[1]] ) %>% tf$reduce_mean( )
         losspt = tf$keras$losses$mse( Xte[[2]], preds[[2]] ) %>% tf$reduce_mean( )
         loss = tf$cast(losspt, mytype) * ptWeight + tf$cast(lossht, mytype)
       })
