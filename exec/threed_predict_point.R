@@ -20,7 +20,7 @@ mybs = dim( Xtr[[1]] )[1]
 Xte = surgeRy::loadNPData( trtefns[1,tstnames] )
 
 
-nlayers = 3   # for unet
+nlayers = 4   # for unet
 # set up the network - all parameters below could be optimized for the application
 unet = createUnetModel3D(
        list( NULL, NULL, NULL, 1 ),
@@ -54,7 +54,6 @@ mydf = data.frame()
 epoch = 1
 wtfn=paste0('lm_weights_gpu', gpuid,'.h5')
 csvfn = paste0('lm_weights_gpu', gpuid,'.csv')
-
 
 # ----training,echo=TRUE,eval=FALSE--------------------------------------------
 mydf = data.frame()
@@ -116,9 +115,10 @@ for ( ptwt in c( 0.001, 0.005, 0.01 ) ) {
   }
 }
 
+derka
 
 # ----traintestcurves,eval=FALSE,echo=TRUE-------------------------------------
-mydf = read.csv( 'lm_weights_gpuMYVIGN.csv' )
+mydf = read.csv( paste0( "lm_weights_gpu", gpuid, ".csv" ) )
 mydfnona = mydf[ !is.na( mydf$test_loss),  ]
 plot( ts( mydfnona ) )
 
