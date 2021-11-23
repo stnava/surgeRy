@@ -11,3 +11,5 @@ inst/doc/*.html
 .Rproj.user
 *.Rproj
 inst/doc
+doc
+Meta

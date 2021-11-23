@@ -19,6 +19,14 @@ The pre-release version of the package can be pulled from GitHub using the [devt
     devtools::install_github("stnava/surgeRy", build_vignettes=TRUE)
 ```
 
+this lets you access vignettes via:
+
+```
+vignette(package='surgeRy')
+```
+
+which will list the current vignettes.
+
 ## For developers
 
 The repository includes a Makefile to facilitate some common tasks.
