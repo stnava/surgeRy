@@ -26,7 +26,7 @@ unet = createUnetModel3D(
        list( NULL, NULL, NULL, 1 ),
        numberOfOutputs = dim(Xte[[2]])[2], # number of landmarks must be known
        numberOfLayers = nlayers, # should optimize this wrt criterion
-       numberOfFiltersAtBaseLayer = 16, # should optimize this wrt criterion
+       numberOfFiltersAtBaseLayer = 32, # should optimize this wrt criterion
        convolutionKernelSize = 3, # maybe should optimize this wrt criterion
        deconvolutionKernelSize = 2,
        poolSize = 2,
@@ -58,7 +58,7 @@ csvfn = paste0('lm_weights_gpu', gpuid,'.csv')
 # ----training,echo=TRUE,eval=FALSE--------------------------------------------
 mydf = data.frame()
 epoch = 1
-for ( ptwt in c( 0.001, 0.005, 0.001, 0.005, 0.01 ) ) {
+for ( ptwt in c( 0.0001, 0.0005, 0.001, 0.005, 0.01 ) ) {
   if ( ptwt == 0.01 ) unetLM = unetLM1
   ptWeight = tf$cast( ptwt, mytype )
   ptWeight2 = tf$cast( 1.0 - ptwt, mytype )
