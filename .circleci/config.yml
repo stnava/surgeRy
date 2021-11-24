@@ -18,7 +18,7 @@ steps: &steps
         command: R -e "source('https://neuroconductor.org/neurocLite.R')"
     - run:
         name: Install package neuroconductor dependencies manually
-        command: Rscript -e "source("https://neuroconductor.org/neurocLite.R"); neuro_install(c('ITKR', 'ANTsRCore','ANTsR'))"
+        command: Rscript -e "source('https://neuroconductor.org/neurocLite.R'); neuro_install(c('ITKR', 'ANTsRCore','ANTsR'))"
     - run:
         name: Install package dependencies manually
         command: Rscript -e "install.packages(c('wesanderson','ggthemes','ggstatsplot'))"
