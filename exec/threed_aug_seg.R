@@ -13,7 +13,7 @@ library( patchMatchR )
 library( surgeRy )
 np <- import("numpy")
 mytype = "float32"
-smoothHeat = 3.0
+smoothHeat = 0.0
 downsam = 4   # downsamples images
 
 ########################
@@ -57,7 +57,9 @@ slistL = list()
 slistR = list()
 plist = list()
 plistu = list()
+print("COLLECT DATA")
 for ( k in 1:nrow( mydf ) ) {
+  print(k)
   image = iMath( antsImageRead( ifns[k] ), "Normalize" )
   mask = thresholdImage( image, 0.01, 1.0 )
   ilistFull[[k]] = list( image, mask )
@@ -75,7 +77,6 @@ for ( k in 1:nrow( mydf ) ) {
   gg = generateDiskPointAndSegmentationData(
       inputImageList = ilist[k],
       pointsetList = plist[k],
-      smoothHeatMaps = smoothHeat,
       maskIndex = 2,
       transformType = "scaleShear",
       noiseParameters = c(0, 0.0),
@@ -114,6 +115,8 @@ for ( k in 1:nFiles ) {
 }
 write.csv( trainTestFileNames, "numpySeg/LMtrainttestfiles.csv", row.names=FALSE)
 
+print("TEST DATA")
+
 tardim = c(64,64,32)
 testfilename = as.character(trainTestFileNames[1,grep("test",colnames(trainTestFileNames))])
 gg = generateDiskPointAndSegmentationData(
@@ -131,17 +134,18 @@ gg = generateDiskPointAndSegmentationData(
     sdHistogramWarping = 0.01,
     sdAffine = 0.2, # limited
     numpynames = testfilename,
-    numberOfSimulations = 1
+    numberOfSimulations = 4
     )
 # visualize example augmented images
 # layout( matrix(1:8,nrow=2))
 # for ( k in 1:8 ) {
-  temp = as.antsImage( gg[["images"]][k,,,,1] )
-  antsImageWrite( temp, '/tmp/temp.nii.gz' )
-  temp = as.antsImage( gg[["segmentation"]][k,,,,1] )
-  antsImageWrite( temp, '/tmp/temps.nii.gz' )
+#  temp = as.antsImage( gg[["images"]][k,,,,1] )
+#  antsImageWrite( temp, '/tmp/temp.nii.gz' )
+#  temp = as.antsImage( gg[["segmentation"]][k,,,,1] )
+#  antsImageWrite( temp, '/tmp/temps.nii.gz' )
 #  plot( temp )
 #  }
+print("LOOP IT")
 
 while( TRUE ) {
   for ( k in 1:nFiles ) {
@@ -157,9 +161,9 @@ while( TRUE ) {
         smoothHeatMaps = 0,
 #        maskIndex = 2,
         transformType = "scaleShear",
-        noiseParameters = c(0, 0.01),
-        sdSimulatedBiasField = 0.01,
-        sdHistogramWarping = 0.01,
+        noiseParameters = c(0, 0.0),
+        sdSimulatedBiasField = 0.0,
+        sdHistogramWarping = 0.0,
         sdAffine = 0.15,
         numpynames = trnfilename,
         numberOfSimulations = 32
