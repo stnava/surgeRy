@@ -58,7 +58,9 @@ slistR = list()
 plist = list()
 plistu = list()
 for ( k in 1:nrow( mydf ) ) {
-  ilistFull[[k]] = list( iMath( antsImageRead( ifns[k] ), "Normalize" ) )
+  image = iMath( antsImageRead( ifns[k] ), "Normalize" )
+  mask = thresholdImage( image, 0.01, 1.0 )
+  ilistFull[[k]] = list( image, mask )
   image = antsImageRead( ifns[k] ) %>% resampleImage( c( 88, 128, 128 ), useVoxels=TRUE )
   image = iMath( image, "Normalize" )
   mask = thresholdImage( image, 0.01, 1.0 )
@@ -124,7 +126,7 @@ gg = generateDiskPointAndSegmentationData(
     smoothHeatMaps = 0,
 #    maskIndex = 2,
     transformType = "scaleShear",
-    noiseParameters = c(0, 0.05),
+    noiseParameters = c(0, 0.01),
     sdSimulatedBiasField = 0.01,
     sdHistogramWarping = 0.01,
     sdAffine = 0.2, # limited
@@ -155,10 +157,10 @@ while( TRUE ) {
         smoothHeatMaps = 0,
 #        maskIndex = 2,
         transformType = "scaleShear",
-        noiseParameters = c(0, 0.05),
+        noiseParameters = c(0, 0.01),
         sdSimulatedBiasField = 0.01,
         sdHistogramWarping = 0.01,
-        sdAffine = 0.1,
+        sdAffine = 0.15,
         numpynames = trnfilename,
         numberOfSimulations = 32
         )
