@@ -288,8 +288,9 @@ specialCrop <- function( x, pt, domainer=NULL ) {
     if ( pti[k] > xdim[k] ) pti[k]=xdim[k]
   }
   mim = makeImage( domainer )
-  domainerlo = pti
-  domainerhi = pti
+  ptioff = pti - round( dim( mim ) / 2 )
+  domainerlo = ptioff
+  domainerhi = ptioff
   loi = cropIndices( x, domainerlo, domainerhi )
   mim = antsCopyImageInfo2( mim, loi )
   resampleImageToTarget( x, mim )
@@ -481,6 +482,8 @@ generateDiskPointAndSegmentationData  <- function(
   }
   if (! missing( maskIndex ) ) {
     doMask = TRUE
+    if ( length( inputImageList[[1]] ) < maskIndex )
+      stop("Did you pass the mask into the inputImageList?")
     Xm = array( dim = c( numberOfSimulations, idim, 1 ) )
     stopifnot( length( numpynames ) > 2 )
     if ( length( grep("mask",numpynames) ) == 0 )
