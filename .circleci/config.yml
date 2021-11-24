@@ -14,11 +14,20 @@ steps: &steps
         name: Install Matrix
         command: R -e "devtools::install_cran('Matrix')"
     - run:
-        name: Install package dependencies
-        command: R -e "devtools::install_deps(dep = TRUE)"
+        name: Install neuroconductor
+        command: R -e "source("https://neuroconductor.org/neurocLite.R")"
+    - run:
+        name: Install package neuroconductor dependencies manually
+        command: Rscript -e "neuro_install(c("ITKR", "ANTsRCore","ANTsR"))"
     - run:
         name: Install package dependencies manually
         command: Rscript -e "install.packages(c('wesanderson','ggthemes','ggstatsplot'))"
+    - run:
+        name: Install ANTsRNet
+        command: Rscript -e "devtools::install_github( "ANTsX/ANTsRNet" ) "
+    - run:
+        name: Install patchMatchR
+        command: Rscript -e "devtools::install_github( "stnava/patchMatchR" ) "
     - run:
         name: Build package
         command: R CMD build .

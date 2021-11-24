@@ -58,10 +58,11 @@ csvfn = paste0('lm_weights_gpu', gpuid,'.csv')
 # ----training,echo=TRUE,eval=FALSE--------------------------------------------
 mydf = data.frame()
 epoch = 1
-for ( ptwt in c( 0.001, 0.005, 0.01 ) ) {
+for ( ptwt in c( 0.02, 0.005, 0.001, 0.005, 0.01 ) ) {
   if ( ptwt == 0.01 ) unetLM = unetLM1
   ptWeight = tf$cast( ptwt, mytype )
-  num_epochs = 500
+  ptWeight2 = tf$cast( 1.0 - ptwt, mytype )
+  num_epochs = 250
   if ( ptwt == 0.01 ) num_epochs = 1000
   optimizerE <- tf$keras$optimizers$Adam(1.e-6)
   batchsize = 2
@@ -84,22 +85,25 @@ for ( ptwt in c( 0.001, 0.005, 0.01 ) ) {
       preds = unetLM( datalist[c(1,3:4)] )
       lossht = tf$keras$losses$mse( datalist[[5]], preds[[1]] ) %>% tf$reduce_mean( )
       losspt = tf$keras$losses$mse( datalist[[2]], preds[[2]] ) %>% tf$reduce_mean( )
-      loss = losspt * ptWeight + lossht
+      loss = losspt * ptWeight + lossht * ptWeight2
       })
     unet_gradients <- tape$gradient(loss, unetLM$trainable_variables)
     optimizerE$apply_gradients(purrr::transpose(list(
         unet_gradients, unetLM$trainable_variables )))
     mydf[ct,'train_loss'] = as.numeric( loss )
+    mydf[ct,'train_ptlossW'] = as.numeric( losspt * ptWeight)
+    mydf[ct,'train_htlossW'] = as.numeric( lossht * ptWeight2 )
     mydf[ct,'train_ptloss'] = as.numeric( losspt )
     mydf[ct,'train_htloss'] = as.numeric( lossht )
     mydf[ct,'ptWeight'] = as.numeric( ptWeight )
+    mydf[ct,'ptWeight2'] = as.numeric( ptWeight2 )
     mydf[ct,'trainData'] = locfns[1]
-    if( epoch > 3 & epoch %% 10 == 0 ) {
+    if( epoch > 3 & epoch %% 20 == 0 ) {
       with(tf$device("/cpu:0"), {
         preds = predict( unetLM, Xte[c(1,3:4)] )
         lossht = tf$keras$losses$mse( Xte[[5]], preds[[1]] ) %>% tf$reduce_mean( )
         losspt = tf$keras$losses$mse( Xte[[2]], preds[[2]] ) %>% tf$reduce_mean( )
-        loss = tf$cast(losspt, mytype) * ptWeight + tf$cast(lossht, mytype)
+        loss = tf$cast(losspt, mytype) * ptWeight + tf$cast(lossht, mytype) * ptWeight2
       })
       # compute the same thing in test data
       mydf[ct,'test_loss'] = as.numeric( loss )
