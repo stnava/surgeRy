@@ -58,11 +58,12 @@ csvfn = paste0('lm_weights_gpu', gpuid,'.csv')
 # ----training,echo=TRUE,eval=FALSE--------------------------------------------
 mydf = data.frame()
 epoch = 1
-for ( ptwt in c( 0.0001, 0.0005, 0.001, 0.005, 0.01 ) ) {
-  if ( ptwt == 0.01 ) unetLM = unetLM1
+myptwts = c( 0.0001, 0.0005, 0.001, 0.005, 0.01 )
+for ( ptwt in myptwts ) {
+  if ( ptwt >= 0.005 ) unetLM = unetLM1
   ptWeight = tf$cast( ptwt, mytype )
   ptWeight2 = tf$cast( 1.0 - ptwt, mytype )
-  num_epochs = 250
+  num_epochs = 100
   if ( ptwt == 0.01 ) num_epochs = 1000
   optimizerE <- tf$keras$optimizers$Adam(1.e-6)
   batchsize = 2
