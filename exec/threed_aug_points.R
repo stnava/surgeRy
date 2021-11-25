@@ -69,12 +69,12 @@ gg = generateDiskPointAndSegmentationData(
     smoothHeatMaps = smoothHeat,
     maskIndex = 2,
     transformType = "scaleShear",
-    noiseParameters = c(0, 0.05),
+    noiseParameters = c(0, 0.01),
     sdSimulatedBiasField = 0.01,
     sdHistogramWarping = 0.01,
     sdAffine = 0.1, # limited
     numpynames = testfilename,
-    numberOfSimulations = 8
+    numberOfSimulations = 24
     )
 # visualize example augmented images
 # layout( matrix(1:8,nrow=2))
@@ -94,7 +94,7 @@ while( TRUE ) {
         smoothHeatMaps = smoothHeat,
         maskIndex = 2,
         transformType = "scaleShear",
-        noiseParameters = c(0, 0.05),
+        noiseParameters = c(0, 0.01),
         sdSimulatedBiasField = 0.01,
         sdHistogramWarping = 0.01,
         sdAffine = 0.1,
