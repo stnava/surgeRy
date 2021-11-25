@@ -25,10 +25,11 @@ chooseTrainingFilesToRead <- function( fileDataFrame, random=FALSE, notFirst=FAL
     localtimes = rep( extime, ncol(fileDataFrame) )
     for ( j in 1:ncol(fileDataFrame) ) {
       myfn = as.character( fileDataFrame[i,j] )
-      stopifnot( file.exists( myfn ) )
-      localtimes[j] = R.utils::lastModified( myfn )
+      if ( ! file.exists( myfn ) ) {
+        localtimes[j] = 0
+      } else localtimes[j] = R.utils::lastModified( myfn )
     }
-    mytimes[ i ] = max( localtimes )
+    mytimes[ i ] = max( localtimes, na.rm=T )
   }
   indices = rev(order(mytimes))
   myindex = indices[2] # default choice

@@ -16,29 +16,32 @@ mytype = "float32"
 smoothHeat = 3.0
 downsam = 4   # downsamples images
 # collect your images - a list of lists - multiple entries in each list are fine
-mydf = read.csv( "manual/ba_notes.csv" )
-ifns = Sys.glob( paste0( "images/",mydf$ids, "*nocsf.nii.gz" ) )
-sfnsR = Sys.glob( paste0( "manual/",mydf$ids, "*rightNBMmanual.nii.gz" ) )
-sfnsL = Sys.glob( paste0( "manual/",mydf$ids, "*leftNBMmanual.nii.gz" ) )
+# mydf = read.csv( "manual/ba_notes.csv" )
+# ifns = Sys.glob( paste0( "images/",mydf$ids, "*nocsf.nii.gz" ) )
+# sfnsR = Sys.glob( paste0( "manual/",mydf$ids, "*rightNBMmanual.nii.gz" ) )
+# sfnsL = Sys.glob( paste0( "manual/",mydf$ids, "*leftNBMmanual.nii.gz" ) )
+ifns = Sys.glob( paste0( "images/*nocsf.nii.gz" ) )
+sfnsR = Sys.glob( paste0( "evaluationResults13/*rightNBMX3PARCSRLJLF.nii.gz" ) )
+sfnsL = Sys.glob( paste0( "evaluationResults13/*leftNBMX3PARCSRLJLF.nii.gz" ) )
 ilist = list()
 slist = list()
 plist = list()
-for ( k in 1:nrow( mydf ) ) {
+for ( k in 1:length( ifns ) ) {
+  print(k)
   image = antsImageRead( ifns[k] ) %>% resampleImage( c( 88, 128, 128 ), useVoxels=TRUE )
   image = iMath( image, "Normalize" )
   mask = thresholdImage( image, 0.01, 1.0 )
   segL = antsImageRead( sfnsL[k] )
   segR = antsImageRead( sfnsR[k] )
   ilist[[k]] = list( image, mask )
-#  slist[[k]] = thresholdImage( temp, 2, 2 ) * upperhalf
   ptmat = rbind( getCentroids( segL )[,1:3], getCentroids( segR )[,1:3] )
   plist[[k]] = ptmat
 }
 
 # identify the number of segmentation classes
-isTrain = c( rep(TRUE,length(ilist)-1), FALSE )
+isTrain = c( rep(TRUE,length(ilist)-20), FALSE )
 
-nFiles = 8
+nFiles = 24
 if ( ! exists( "uid" ) )
   uid = paste0("LM",sample(1:1000000,nFiles),"Z")
 types = c("images.npy", "pointset.npy", "mask.npy", "coordconv.npy",
@@ -50,12 +53,12 @@ colnamesTT = c(
   paste0("test",gsub(".npy","",types)) )
 colnames( trainTestFileNames ) = colnamesTT
 for ( k in 1:nFiles ) {
-  twogroups = paste0("numpy/",uid[k],c("train","test"))
+  twogroups = paste0("numpyPoints/",uid[k],c("train","test"))
   npextsTr = paste0( twogroups[1], types )
   npextsTe = paste0( twogroups[2], types )
   trainTestFileNames[k,]=as.character( c(npextsTr,npextsTe) )
 }
-write.csv( trainTestFileNames, "numpy/LMtrainttestfiles.csv", row.names=FALSE)
+write.csv( trainTestFileNames, "numpyPoints/LMtrainttestfiles.csv", row.names=FALSE)
 
 
 testfilename = as.character(trainTestFileNames[1,grep("test",colnames(trainTestFileNames))])
