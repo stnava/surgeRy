@@ -96,7 +96,7 @@ for ( k in 1:nrow( mydf ) ) {
 # identify the number of segmentation classes
 isTrain = c( rep(TRUE,length(ilist)-1), FALSE )
 
-nFiles = 8
+nFiles = 24
 if ( ! exists( "uid" ) )
   uid = paste0("LM",sample(1:1000000,nFiles),"Z")
 types = c("images.npy", "pointset.npy", "mask.npy", "coordconv.npy",
@@ -129,12 +129,12 @@ gg = generateDiskPointAndSegmentationData(
     smoothHeatMaps = 0,
 #    maskIndex = 2,
     transformType = "scaleShear",
-    noiseParameters = c(0, 0.01),
-    sdSimulatedBiasField = 0.01,
-    sdHistogramWarping = 0.01,
-    sdAffine = 0.2, # limited
+    noiseParameters = c(0, 0.0),
+    sdSimulatedBiasField = 0.0,
+    sdHistogramWarping = 0.0,
+    sdAffine = 0.05, # limited
     numpynames = testfilename,
-    numberOfSimulations = 4
+    numberOfSimulations = 12
     )
 # visualize example augmented images
 # layout( matrix(1:8,nrow=2))
@@ -146,7 +146,7 @@ gg = generateDiskPointAndSegmentationData(
 #  plot( temp )
 #  }
 print("LOOP IT")
-
+gc()
 while( TRUE ) {
   for ( k in 1:nFiles ) {
     trnfilename = as.character(trainTestFileNames[k,grep("train",colnames(trainTestFileNames))])
@@ -166,7 +166,8 @@ while( TRUE ) {
         sdHistogramWarping = 0.0,
         sdAffine = 0.15,
         numpynames = trnfilename,
-        numberOfSimulations = 32
+        numberOfSimulations = 64
         )
+    gc()
     }
   }
