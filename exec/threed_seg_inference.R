@@ -76,6 +76,7 @@ with(tf$device("/cpu:0"), {
 plist[[1]] = matrix( unetp[[2]][1,1,], nrow=1, ncol=3 ) # 1st sample, 1st point
 physspace = specialCrop( ilist[[1]][[1]], plist[[1]][whichPoint,], patchSize)
 print( plist[[1]] )
+antsImageWrite( physspace, '/tmp/tempPS.nii.gz' )
 ################################################################################
 ################################################################################
 unet = createUnetModel3D(
