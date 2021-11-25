@@ -31,8 +31,8 @@ for ( k in 1:length( ifns ) ) {
   image = antsImageRead( ifns[k] ) %>% resampleImage( c( 88, 128, 128 ), useVoxels=TRUE )
   image = iMath( image, "Normalize" )
   mask = thresholdImage( image, 0.01, 1.0 )
-  segL = antsImageRead( sfnsL[k] )
-  segR = antsImageRead( sfnsR[k] )
+  segL = antsImageRead( sfnsL[k] ) %>% thresholdImage( 1, 3 )
+  segR = antsImageRead( sfnsR[k] ) %>% thresholdImage( 1, 3 )
   ilist[[k]] = list( image, mask )
   ptmat = rbind( getCentroids( segL )[,1:3], getCentroids( segR )[,1:3] )
   plist[[k]] = ptmat
