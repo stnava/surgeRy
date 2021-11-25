@@ -59,20 +59,26 @@ mydf = data.frame()
 epoch = 1
 wtfn=paste0('lm_weights_gpu', gpuid,'.h5')
 csvfn = paste0('lm_weights_gpu', gpuid,'.csv')
-
+myptwts = c( 0.0001, 0.0005, 0.001, 0.005, 0.01 )
+if ( file.exists( wtfn ) ) {
+  unetLM = unetLM1
+  load_model_weights_hdf5( unetLM, wtfn )
+  load_model_weights_hdf5( unetLM1, wtfn )
+  myptwts = c( 0.005, 0.01, 0.02 )
+}
 # ----training,echo=TRUE,eval=FALSE--------------------------------------------
 mydf = data.frame()
 epoch = 1
-myptwts = c( 0.0001, 0.0005, 0.001, 0.005, 0.01 )
 for ( ptwt in myptwts ) {
   if ( ptwt >= 0.005 ) unetLM = unetLM1
   ptWeight = tf$cast( ptwt, mytype )
   ptWeight2 = tf$cast( 1.0 - ptwt, mytype )
   num_epochs = 200
-  if ( ptwt == 0.01 ) num_epochs = 2000
+  if ( ptwt >= 0.01 ) num_epochs = 2000
   optimizerE <- tf$keras$optimizers$Adam(2.e-6)
   batchsize = 2
-  for (epoch in 1:num_epochs ) {
+  epoch = 1
+  for (epoch in epoch:num_epochs ) {
     if ( (epoch %% round(mybs/batchsize) ) == 0 & epoch > 1  ) {
         # refresh the data
         locfns = chooseTrainingFilesToRead( trtefns[,trnnames] )
