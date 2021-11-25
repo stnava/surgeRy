@@ -1,3 +1,6 @@
+#!/usr/bin/env Rscript
+args<-commandArgs(TRUE)
+whichToPredict <- as.numeric( args[1] )
 Sys.setenv("TF_NUM_INTEROP_THREADS"=12)
 Sys.setenv("TF_NUM_INTRAOP_THREADS"=12)
 Sys.setenv("ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS"=12)
@@ -41,9 +44,8 @@ patchSize = c( 64, 64, 32 )
 whichPoint = 1
 ifns = Sys.glob("images/*nocsf.nii.gz")
 # inference
-ww = sample( 1:length( ifns ), 1 )
-print( paste( ww, ifns[ww] ) )
-image = antsImageRead( ifns[ww] ) %>% iMath("Normalize")
+print( paste( whichToPredict, ifns[whichToPredict] ) )
+image = antsImageRead( ifns[whichToPredict] ) %>% iMath("Normalize")
 imager = resampleImage( image, c( 88, 128, 128 ), useVoxels=TRUE )
 mask = thresholdImage( image, 0.01, 1 )
 maskr = thresholdImage( imager, 0.01, 1 )
