@@ -44,15 +44,18 @@ ifns = Sys.glob("images/*nocsf.nii.gz")
 ww = sample( 1:length( ifns ), 1 )
 print( paste( ww, ifns[ww] ) )
 image = antsImageRead( ifns[ww] ) %>% iMath("Normalize")
+imager = resampleImage( image, c( 88, 128, 128 ), useVoxels=TRUE )
 mask = thresholdImage( image, 0.01, 1 )
+maskr = thresholdImage( imager, 0.01, 1 )
 mycom = getCenterOfMass( mask )
 ilist = list( list( image, mask ) )
+ilistr = list( list( imager, maskr ) )
 plist = list( matrix(mycom,nrow=1) )
 types = c("images.npy", "pointset.npy", "mask.npy", "coordconv.npy", "heatmap.npy" )
 npns = paste0("numpyinference/INF",types)
 nsim = 1
 gg = generateDiskPointAndSegmentationData(
-    inputImageList = ilist,
+    inputImageList = ilistr,
     pointsetList = plist,
     maskIndex = 2,
     transformType = "scaleShear",
@@ -72,6 +75,7 @@ with(tf$device("/cpu:0"), {
 })
 plist[[1]] = matrix( unetp[[2]][1,1,], nrow=1, ncol=3 ) # 1st sample, 1st point
 physspace = specialCrop( ilist[[1]][[1]], plist[[1]][whichPoint,], patchSize)
+print( plist[[1]] )
 ################################################################################
 ################################################################################
 unet = createUnetModel3D(
