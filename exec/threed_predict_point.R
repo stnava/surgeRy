@@ -11,7 +11,7 @@ np <- import("numpy")
 mytype = "float32"
 
 ## ----howdowereadintime,echo=TRUE,eval=FALSE-----------------------------------
-trtefns = read.csv( "numpy/LMtrainttestfiles.csv" ) # critical - same file name
+trtefns = read.csv( "numpyPoints/LMtrainttestfiles.csv" ) # critical - same file name
 trnnames = colnames(trtefns)[grep("train", colnames(trtefns) )]
 tstnames = colnames(trtefns)[grep("test", colnames(trtefns) )]
 loadfirst = chooseTrainingFilesToRead( trtefns[,trnnames] )

@@ -26,7 +26,7 @@ chooseTrainingFilesToRead <- function( fileDataFrame, random=FALSE, notFirst=FAL
     for ( j in 1:ncol(fileDataFrame) ) {
       myfn = as.character( fileDataFrame[i,j] )
       if ( ! file.exists( myfn ) ) {
-        localtimes[j] = 0
+        localtimes[j] = NA
       } else localtimes[j] = R.utils::lastModified( myfn )
     }
     mytimes[ i ] = max( localtimes, na.rm=T )
@@ -40,7 +40,6 @@ chooseTrainingFilesToRead <- function( fileDataFrame, random=FALSE, notFirst=FAL
   }
   return( fileDataFrame[myindex,] )
 }
-
 
 #' Read augmentation data from on disk storage
 #'
