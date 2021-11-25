@@ -1,4 +1,3 @@
-set.seed( 000 )
 library( ANTsR )
 library( ANTsRNet )
 library( tensorflow )
@@ -45,8 +44,7 @@ mask = thresholdImage( image, 0.01, 1 )
 mycom = getCenterOfMass( mask )
 ilist = list( list( image, mask ) )
 plist = list( matrix(mycom,nrow=1) )
-types = c("images.npy", "pointset.npy", "mask.npy", "coordconv.npy",
-  "heatmap.npy" )
+types = c("images.npy", "pointset.npy", "mask.npy", "coordconv.npy", "heatmap.npy" )
 npns = paste0("numpyinference/INF",types)
 nsim = 1
 gg = generateDiskPointAndSegmentationData(
