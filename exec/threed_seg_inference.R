@@ -63,7 +63,10 @@ gg = generateDiskPointAndSegmentationData(
 ################################################################################
 # define the physical space for the sub-image
 # needs to match the augmentation code
-unetp = predict( unetLM, list( gg[[1]], gg[[3]], gg[[4]] ) )
+# unetLM expects (1) image feature;  (2) mask;  (3) coordconv
+with(tf$device("/cpu:0"), {
+  unetp = predict( unetLM, list( gg[[1]], gg[[3]], gg[[4]] ) )
+})
 plist[[1]] = matrix( unetp[[2]][1,1,], nrow=1, ncol=3 ) # 1st sample, 1st point
 physspace = specialCrop( ilist[[1]][[1]], plist[[1]][whichPoint,], patchSize)
 ################################################################################

@@ -14,16 +14,18 @@ mytype = "float32"
 trtefns = read.csv( "numpyPoints/LMtrainttestfiles.csv" ) # critical - same file name
 trnnames = colnames(trtefns)[grep("train", colnames(trtefns) )]
 tstnames = colnames(trtefns)[grep("test", colnames(trtefns) )]
-loadfirst = chooseTrainingFilesToRead( trtefns[,trnnames] )
-Xtr = surgeRy::loadNPData( loadfirst )
+locfns = chooseTrainingFilesToRead( trtefns[,trnnames] )
+Xtr = surgeRy::loadNPData( locfns )
+# Xtr[[1]] = abind::abind( Xtr[[1]], Xtr[[4]], along=5 )
 mybs = dim( Xtr[[1]] )[1]
 Xte = surgeRy::loadNPData( trtefns[1,tstnames] )
+# Xte[[1]] = abind::abind( Xte[[1]], Xte[[4]], along=5 )
 
 
 nlayers = 4   # for unet
 # set up the network - all parameters below could be optimized for the application
 unet = createUnetModel3D(
-       list( NULL, NULL, NULL, 1 ),
+       list( NULL, NULL, NULL, 1 ), # image and coordconv = 4, otherwise 1
        numberOfOutputs = dim(Xte[[2]])[2], # number of landmarks must be known
        numberOfLayers = nlayers, # should optimize this wrt criterion
        numberOfFiltersAtBaseLayer = 32, # should optimize this wrt criterion
@@ -44,6 +46,9 @@ unetLM = patchMatchR::deepLandmarkRegressionWithHeatmaps( unet,
   activation = 'none', theta=0 )
 unetLM1 = patchMatchR::deepLandmarkRegressionWithHeatmaps( unet,
   activation = 'relu', theta=0 )
+# these are pre-trained weights
+load_model_weights_hdf5( unetLM, 'lm_weights_gpu2.h5' )
+load_model_weights_hdf5( unetLM1, 'lm_weights_gpu2.h5' )
 
 
 
@@ -63,9 +68,9 @@ for ( ptwt in myptwts ) {
   if ( ptwt >= 0.005 ) unetLM = unetLM1
   ptWeight = tf$cast( ptwt, mytype )
   ptWeight2 = tf$cast( 1.0 - ptwt, mytype )
-  num_epochs = 100
-  if ( ptwt == 0.01 ) num_epochs = 1000
-  optimizerE <- tf$keras$optimizers$Adam(1.e-6)
+  num_epochs = 200
+  if ( ptwt == 0.01 ) num_epochs = 2000
+  optimizerE <- tf$keras$optimizers$Adam(2.e-6)
   batchsize = 2
   for (epoch in 1:num_epochs ) {
     if ( (epoch %% round(mybs/batchsize) ) == 0 & epoch > 1  ) {
@@ -73,6 +78,7 @@ for ( ptwt in myptwts ) {
         locfns = chooseTrainingFilesToRead( trtefns[,trnnames] )
         print( locfns[1] )
         Xtr = surgeRy::loadNPData( locfns )
+#        Xtr[[1]] = abind::abind( Xtr[[1]], Xtr[[4]], along=5 )
       }
     ct = nrow( mydf ) + 1
     mysam = sample( 1:nrow(Xtr[[1]]), batchsize )
@@ -99,7 +105,7 @@ for ( ptwt in myptwts ) {
     mydf[ct,'ptWeight'] = as.numeric( ptWeight )
     mydf[ct,'ptWeight2'] = as.numeric( ptWeight2 )
     mydf[ct,'trainData'] = locfns[1]
-    if( epoch > 3 & epoch %% 20 == 0 ) {
+    if( epoch > 3 & epoch %% 50 == 0 ) {
       with(tf$device("/cpu:0"), {
         preds = predict( unetLM, Xte[c(1,3:4)] )
         lossht = tf$keras$losses$mse( Xte[[5]], preds[[1]] ) %>% tf$reduce_mean( )
