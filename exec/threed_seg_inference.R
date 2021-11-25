@@ -1,3 +1,6 @@
+Sys.setenv("TF_NUM_INTEROP_THREADS"=12)
+Sys.setenv("TF_NUM_INTRAOP_THREADS"=12)
+Sys.setenv("ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS"=12)
 library( ANTsR )
 library( ANTsRNet )
 library( tensorflow )
@@ -31,10 +34,10 @@ posteriorMask <- layer_multiply(
   list( unetLM$outputs[[1]] , maskinput ), name='maskTimesPosteriors'  )
 unetLM = keras_model( list( unetLM$inputs[[1]], maskinput ), posteriorMask )
 unetLM = patchMatchR::deepLandmarkRegressionWithHeatmaps( unetLM, activation = 'relu', theta=0 )
-load_model_weights_hdf5( unetLM, 'lm_weights_gpu2.h5' )
+load_model_weights_hdf5( unetLM, 'lm_weights_gpu1.h5' )
 ###########################
 patchSize = c( 64, 64, 32 )
-patchSize = c( 64, 32, 32 )
+# patchSize = c( 64, 32, 32 )
 whichPoint = 1
 ifns = Sys.glob("images/*nocsf.nii.gz")
 # inference
