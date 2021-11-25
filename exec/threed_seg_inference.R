@@ -34,6 +34,7 @@ unetLM = patchMatchR::deepLandmarkRegressionWithHeatmaps( unetLM, activation = '
 load_model_weights_hdf5( unetLM, 'lm_weights_gpu2.h5' )
 ###########################
 patchSize = c( 64, 64, 32 )
+patchSize = c( 64, 32, 32 )
 whichPoint = 1
 ifns = Sys.glob("images/*nocsf.nii.gz")
 # inference
