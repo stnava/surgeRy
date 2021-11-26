@@ -38,3 +38,8 @@ The repository includes a Makefile to facilitate some common tasks.
 ### Updating documentation
 
 `$ make doc`. Requires the [roxygen2](https://github.com/klutometis/roxygen) package.
+
+
+### Numerical Coordinate Regression with Convolutional Neural Networks
+
+
