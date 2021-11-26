@@ -56,6 +56,8 @@ epoch = 1
 wtfn=paste0('nbm_right_weights_gpu', gpuid,'.h5')
 csvfn = paste0('nbm_right_weights_gpu', gpuid,'.csv')
 
+if ( file.exists( wtfn ) ) load_model_weights_hdf5( unet, wtfn )
+
 # ----training,echo=TRUE,eval=FALSE--------------------------------------------
 mydf = data.frame()
 epoch = 1
