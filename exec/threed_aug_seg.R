@@ -54,6 +54,14 @@ npns = paste0("numpyinference/INF",types)
 ifns = Sys.glob( paste0( "images/*nocsf.nii.gz" ) )
 sfnsR = Sys.glob( paste0( "evaluationResults13/*rightNBMX3PARCSRLJLF.nii.gz" ) )
 sfnsL = Sys.glob( paste0( "evaluationResults13/*leftNBMX3PARCSRLJLF.nii.gz" ) )
+ntestsim = 16
+if ( ! exists( "isTest" ) ) isTest = FALSE
+if ( isTest ) {
+  ifns = ifns[1:4]
+  sfnsR = sfnsR[1:4]
+  sfnsL = sfnsL[1:4]
+  ntestsim = 2
+}
 ilist = list()
 ilistFull = list()
 slistL = list()
@@ -97,7 +105,8 @@ for ( k in 1:length( ifns ) ) {
 
 
 # identify the number of segmentation classes
-isTrain = c( rep(TRUE,length(ilist)-20), FALSE )
+if ( ! isTest ) isTrain = c( rep(TRUE,length(ilist)-20), FALSE )
+if ( isTest ) isTrain = c( rep(TRUE,3), FALSE )
 
 nFiles = 24
 if ( ! exists( "uid" ) )
@@ -144,7 +153,7 @@ gg = generateDiskPointAndSegmentationData(
     sdHistogramWarping = 0.0,
     sdAffine = 0.05, # limited
     numpynames = testfilename,
-    numberOfSimulations = 12
+    numberOfSimulations = ntestsim
     )
 # visualize example augmented images
 # layout( matrix(1:8,nrow=2))
@@ -156,7 +165,6 @@ gg = generateDiskPointAndSegmentationData(
 #  plot( temp )
 #  }
 print("LOOP IT")
-gc()
 while( TRUE ) {
   for ( k in 1:nFiles ) {
     trnfilename = as.character(trainTestFileNames[k,grep("train",colnames(trainTestFileNames))])
@@ -176,8 +184,7 @@ while( TRUE ) {
         sdHistogramWarping = 0.0,
         sdAffine = 0.15,
         numpynames = trnfilename,
-        numberOfSimulations = 64
+        numberOfSimulations = 32
         )
-    gc()
     }
   }
