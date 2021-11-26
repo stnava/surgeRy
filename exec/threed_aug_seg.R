@@ -116,9 +116,6 @@ for ( k in 1:nFiles ) {
   npextsTe = paste0( twogroups[2], types )
   trainTestFileNames[k,]=as.character( c(npextsTr,npextsTe) )
 }
-write.csv( trainTestFileNames, "numpySeg/LMtrainttestfiles.csv", row.names=FALSE)
-
-print("TEST DATA")
 # record some of the parameters
 trainTestFileNames$side = 'right'
 trainTestFileNames$lowX = 88
@@ -128,6 +125,9 @@ trainTestFileNames$patchX = 64
 trainTestFileNames$patchY = 64
 trainTestFileNames$patchZ = 32
 trainTestFileNames$whichPoint = 2
+write.csv( trainTestFileNames, "numpySeg/LMtrainttestfiles.csv", row.names=FALSE)
+
+print("TEST DATA")
 tardim = c(trainTestFileNames$patchX[1],trainTestFileNames$patchY[1],trainTestFileNames$patchZ[1])
 testfilename = as.character(trainTestFileNames[1,grep("test",colnames(trainTestFileNames))])
 gg = generateDiskPointAndSegmentationData(
