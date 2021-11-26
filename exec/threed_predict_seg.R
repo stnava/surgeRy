@@ -48,8 +48,8 @@ unet = createUnetModel3D(
        additionalOptions = c( "nnUnetActivationStyle" ),
        mode = c("sigmoid")
      )
-load_model_weights_hdf5( unet, 'nbm_left_weights_gpu1good.h5',
-  by_name = TRUE, skip_mismatch = TRUE, reshape = TRUE )
+# load_model_weights_hdf5( unet, 'nbm_left_weights_gpu1good.h5',
+#  by_name = TRUE, skip_mismatch = TRUE, reshape = TRUE )
 gpuid = Sys.getenv(x = "CUDA_VISIBLE_DEVICES")
 mydf = data.frame()
 epoch = 1
