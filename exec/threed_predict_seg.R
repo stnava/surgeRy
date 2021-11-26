@@ -35,7 +35,7 @@ Xte = surgeRy::loadNPData( trtefns[1,tstnames[c(1,6)]] )
 nlayers = 4   # for unet
 # set up the network - all parameters below could be optimized for the application
 unet = createUnetModel3D(
-       list( NULL, NULL, NULL, 2 ),
+       list( NULL, NULL, NULL, 1 ),
        numberOfOutputs = 1, # number of landmarks must be known
        numberOfLayers = nlayers, # should optimize this wrt criterion
        numberOfFiltersAtBaseLayer = 32, # should optimize this wrt criterion
@@ -48,7 +48,8 @@ unet = createUnetModel3D(
        additionalOptions = c( "nnUnetActivationStyle" ),
        mode = c("sigmoid")
      )
-load_model_weights_hdf5( unet, 'nbm_left_weights_gpu1good.h5' )
+load_model_weights_hdf5( unet, 'nbm_left_weights_gpu1good.h5',
+  by_name = TRUE, skip_mismatch = TRUE, reshape = TRUE )
 gpuid = Sys.getenv(x = "CUDA_VISIBLE_DEVICES")
 mydf = data.frame()
 epoch = 1
