@@ -38,7 +38,7 @@ posteriorMask <- layer_multiply(
 unet = keras_model( list( unet$inputs[[1]], maskinput ), posteriorMask )
 unet = patchMatchR::deepLandmarkRegressionWithHeatmaps( unet,
   activation = 'relu', theta=0 )
-load_model_weights_hdf5( unet, 'lm_weights_gpu2.h5' )
+load_model_weights_hdf5( unet, 'lm_weights_gpu1good.h5' )
 # this unet predicts points
 #
 # collect your images - a list of lists - multiple entries in each list are fine
@@ -47,10 +47,13 @@ types = c("images.npy", "pointset.npy", "mask.npy", "coordconv.npy",
   "heatmap.npy" )
 npns = paste0("numpyinference/INF",types)
 
-mydf = read.csv( "manual/ba_notes.csv" )
-ifns = Sys.glob( paste0( "images/",mydf$ids, "*nocsf.nii.gz" ) )
-sfnsR = Sys.glob( paste0( "manual/",mydf$ids, "*rightNBMmanual.nii.gz" ) )
-sfnsL = Sys.glob( paste0( "manual/",mydf$ids, "*leftNBMmanual.nii.gz" ) )
+# mydf = read.csv( "manual/ba_notes.csv" )
+# ifns = Sys.glob( paste0( "images/",mydf$ids, "*nocsf.nii.gz" ) )
+# sfnsR = Sys.glob( paste0( "manual/",mydf$ids, "*rightNBMmanual.nii.gz" ) )
+# sfnsL = Sys.glob( paste0( "manual/",mydf$ids, "*leftNBMmanual.nii.gz" ) )
+ifns = Sys.glob( paste0( "images/*nocsf.nii.gz" ) )
+sfnsR = Sys.glob( paste0( "evaluationResults13/*rightNBMX3PARCSRLJLF.nii.gz" ) )
+sfnsL = Sys.glob( paste0( "evaluationResults13/*leftNBMX3PARCSRLJLF.nii.gz" ) )
 ilist = list()
 ilistFull = list()
 slistL = list()
@@ -66,14 +69,14 @@ for ( k in 1:nrow( mydf ) ) {
   image = antsImageRead( ifns[k] ) %>% resampleImage( c( 88, 128, 128 ), useVoxels=TRUE )
   image = iMath( image, "Normalize" )
   mask = thresholdImage( image, 0.01, 1.0 )
-  segL = antsImageRead( sfnsL[k] )
-  segR = antsImageRead( sfnsR[k] )
+  segL = antsImageRead( sfnsL[k] ) %>% thresholdImage( 1, 3 )
+  segR = antsImageRead( sfnsR[k] ) %>% thresholdImage( 1, 3 )
   ilist[[k]] = list( image, mask )
   slistL[[k]] = segL
   slistR[[k]] = segR
   ptmat = rbind( getCentroids( segL )[,1:3], getCentroids( segR )[,1:3] )
   plist[[k]] = ptmat
-  nsim = 8
+  nsim = 4
   gg = generateDiskPointAndSegmentationData(
       inputImageList = ilist[k],
       pointsetList = plist[k],
@@ -94,7 +97,7 @@ for ( k in 1:nrow( mydf ) ) {
 
 
 # identify the number of segmentation classes
-isTrain = c( rep(TRUE,length(ilist)-1), FALSE )
+isTrain = c( rep(TRUE,length(ilist)-20), FALSE )
 
 nFiles = 24
 if ( ! exists( "uid" ) )
@@ -116,18 +119,25 @@ for ( k in 1:nFiles ) {
 write.csv( trainTestFileNames, "numpySeg/LMtrainttestfiles.csv", row.names=FALSE)
 
 print("TEST DATA")
-
-tardim = c(64,64,32)
+# record some of the parameters
+trainTestFileNames$side = 'right'
+trainTestFileNames$lowX = 88
+trainTestFileNames$lowY = 128
+trainTestFileNames$lowZ = 128
+trainTestFileNames$patchX = 64
+trainTestFileNames$patchY = 64
+trainTestFileNames$patchZ = 32
+trainTestFileNames$whichPoint = 2
+tardim = c(trainTestFileNames$patchX[1],trainTestFileNames$patchY[1],trainTestFileNames$patchZ[1])
 testfilename = as.character(trainTestFileNames[1,grep("test",colnames(trainTestFileNames))])
 gg = generateDiskPointAndSegmentationData(
     inputImageList = ilistFull,
     pointsetList = plistu,
-    slistL,   # should match the correct side of the landmark
-    cropping=c(1,tardim), # just train one side first
+    slistR,   # should match the correct side of the landmark
+    cropping=c(trainTestFileNames$whichPoint[1],tardim), # just train one side first
     segmentationNumbers = 1,
     selector = !isTrain,
     smoothHeatMaps = 0,
-#    maskIndex = 2,
     transformType = "scaleShear",
     noiseParameters = c(0, 0.0),
     sdSimulatedBiasField = 0.0,
@@ -154,8 +164,8 @@ while( TRUE ) {
     gg = generateDiskPointAndSegmentationData(
         inputImageList = ilistFull,
         pointsetList = plist,
-        slistL,   # should match the correct side of the landmark
-        cropping=c(1,tardim), # just train one side first
+        slistR,   # should match the correct side of the landmark
+        cropping=c(trainTestFileNames$whichPoint[1],tardim), # just train one side first
         segmentationNumbers = 1,
         selector = isTrain,
         smoothHeatMaps = 0,
