@@ -61,7 +61,7 @@ slistR = list()
 plist = list()
 plistu = list()
 print("COLLECT DATA")
-for ( k in 1:nrow( mydf ) ) {
+for ( k in 1:length( ifns ) ) {
   print(k)
   image = iMath( antsImageRead( ifns[k] ), "Normalize" )
   mask = thresholdImage( image, 0.01, 1.0 )
