@@ -66,28 +66,30 @@ ilist = list()
 ilistFull = list()
 slistL = list()
 slistR = list()
-plist = list()
 plistu = list()
 print("COLLECT DATA")
+lodim = c( 88, 128, 128 )
 for ( k in 1:length( ifns ) ) {
   print(k)
   image = iMath( antsImageRead( ifns[k] ), "Normalize" )
   mask = thresholdImage( image, 0.01, 1.0 )
-  ilistFull[[k]] = list( image, mask )
-  image = antsImageRead( ifns[k] ) %>% resampleImage( c( 88, 128, 128 ), useVoxels=TRUE )
+#  ilistFull[[k]] = list( image, mask )
+  ilistFull[[k]] = list( image )
+  image = antsImageRead( ifns[k] ) %>% resampleImage( lodim, useVoxels=TRUE )
   image = iMath( image, "Normalize" )
   mask = thresholdImage( image, 0.01, 1.0 )
-  segL = antsImageRead( sfnsL[k] ) %>% thresholdImage( 1, 3 )
-  segR = antsImageRead( sfnsR[k] ) %>% thresholdImage( 1, 3 )
   ilist[[k]] = list( image, mask )
-  slistL[[k]] = segL
+  segL = antsImageRead( sfnsL[k] ) %>% thresholdImage( 1, 3 )
+# slistL[[k]] = segL
+  segR = antsImageRead( sfnsR[k] ) %>% thresholdImage( 1, 3 )
   slistR[[k]] = segR
-  ptmat = rbind( getCentroids( segL )[,1:3], getCentroids( segR )[,1:3] )
-  plist[[k]] = ptmat
+  # this is just a placeholder
+  ptmat = rbind( getCentroids( mask )[,1:3], getCentroids( mask )[,1:3] )
+  plistu[[k]] = ptmat
   nsim = 4
   gg = generateDiskPointAndSegmentationData(
       inputImageList = ilist[k],
-      pointsetList = plist[k],
+      pointsetList = plistu[k],
       maskIndex = 2,
       transformType = "scaleShear",
       noiseParameters = c(0, 0.0),
@@ -127,15 +129,16 @@ for ( k in 1:nFiles ) {
 }
 # record some of the parameters
 trainTestFileNames$side = 'right'
-trainTestFileNames$lowX = 88
-trainTestFileNames$lowY = 128
-trainTestFileNames$lowZ = 128
+trainTestFileNames$lowX = lodim[1]
+trainTestFileNames$lowY = lodim[2]
+trainTestFileNames$lowZ = lodim[3]
 trainTestFileNames$patchX = 64
 trainTestFileNames$patchY = 64
 trainTestFileNames$patchZ = 32
 trainTestFileNames$whichPoint = 2
 write.csv( trainTestFileNames, "numpySeg/LMtrainttestfiles.csv", row.names=FALSE)
-
+rm( ilist )
+gc()
 print("TEST DATA")
 tardim = c(trainTestFileNames$patchX[1],trainTestFileNames$patchY[1],trainTestFileNames$patchZ[1])
 testfilename = as.character(trainTestFileNames[1,grep("test",colnames(trainTestFileNames))])
@@ -144,7 +147,7 @@ gg = generateDiskPointAndSegmentationData(
     pointsetList = plistu,
     slistR,   # should match the correct side of the landmark
     cropping=c(trainTestFileNames$whichPoint[1],tardim), # just train one side first
-    segmentationNumbers = 1,
+    segmentationNumbers = 1, # only one here
     selector = !isTrain,
     smoothHeatMaps = 0,
     transformType = "scaleShear",
@@ -171,7 +174,7 @@ while( TRUE ) {
     print( paste(k, trnfilename[1] ) )
     gg = generateDiskPointAndSegmentationData(
         inputImageList = ilistFull,
-        pointsetList = plist,
+        pointsetList = plistu,
         slistR,   # should match the correct side of the landmark
         cropping=c(trainTestFileNames$whichPoint[1],tardim), # just train one side first
         segmentationNumbers = 1,
@@ -179,7 +182,7 @@ while( TRUE ) {
         smoothHeatMaps = 0,
 #        maskIndex = 2,
         transformType = "scaleShear",
-        noiseParameters = c(0, 0.0),
+        noiseParameters = c(0, 0.01), # little noise
         sdSimulatedBiasField = 0.0,
         sdHistogramWarping = 0.0,
         sdAffine = 0.15,
