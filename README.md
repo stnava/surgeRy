@@ -40,7 +40,9 @@ The repository includes a Makefile to facilitate some common tasks.
 `$ make doc`. Requires the [roxygen2](https://github.com/klutometis/roxygen) package.
 
 
-### A review of the concepts used here
+### References to the concepts used here
+
+* Cephalometric Landmark Regression with Convolutional Neural Networks on 3D Computed Tomography Data ( a review paper )
 
 * Numerical Coordinate Regression with Convolutional Neural Networks
 
