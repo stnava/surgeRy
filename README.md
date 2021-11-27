@@ -40,6 +40,10 @@ The repository includes a Makefile to facilitate some common tasks.
 `$ make doc`. Requires the [roxygen2](https://github.com/klutometis/roxygen) package.
 
 
-### Numerical Coordinate Regression with Convolutional Neural Networks
+### A review of the concepts used here
 
+* Numerical Coordinate Regression with Convolutional Neural Networks
 
+* Human pose regression by combining indirect part detection and contextual information (section 3.2)
+
+* Automatic 3d cephalometric annotation system using shadowed 2d image-based machine learning
