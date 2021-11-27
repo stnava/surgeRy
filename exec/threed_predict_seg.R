@@ -66,7 +66,7 @@ optimizerE <- tf$keras$optimizers$Adam(1.e-5)
 batchsize = 2
 for (epoch in 1:num_epochs ) {
     if ( (epoch %% round(mybs/batchsize) ) == 0 & epoch > 1  ) {
-      loadfirst = chooseTrainingFilesToRead( trtefns[,trnnames[c(1,6)]] )
+      loadfirst = chooseTrainingFilesToRead( trtefns[,trnnames[c(1,6)]], notFirst=TRUE )
       Xtr = surgeRy::loadNPData( loadfirst )
       }
     ct = nrow( mydf ) + 1
