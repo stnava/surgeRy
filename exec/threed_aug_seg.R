@@ -80,9 +80,9 @@ for ( k in 1:length( ifns ) ) {
   mask = thresholdImage( image, 0.01, 1.0 )
   ilist[[k]] = list( image, mask )
   segL = antsImageRead( sfnsL[k] ) %>% thresholdImage( 1, 3 )
-# slistL[[k]] = segL
+  slistL[[k]] = segL
   segR = antsImageRead( sfnsR[k] ) %>% thresholdImage( 1, 3 )
-  slistR[[k]] = segR
+#  slistR[[k]] = segR
   # this is just a placeholder
   ptmat = rbind( getCentroids( mask )[,1:3], getCentroids( mask )[,1:3] )
   plistu[[k]] = ptmat
@@ -128,15 +128,15 @@ for ( k in 1:nFiles ) {
   trainTestFileNames[k,]=as.character( c(npextsTr,npextsTe) )
 }
 # record some of the parameters
-trainTestFileNames$side = 'right'
+trainTestFileNames$side = 'left'
+trainTestFileNames$whichPoint = 1
 trainTestFileNames$lowX = lodim[1]
 trainTestFileNames$lowY = lodim[2]
 trainTestFileNames$lowZ = lodim[3]
 trainTestFileNames$patchX = 64
 trainTestFileNames$patchY = 64
 trainTestFileNames$patchZ = 32
-trainTestFileNames$whichPoint = 2
-write.csv( trainTestFileNames, "numpySeg/LMtrainttestfiles.csv", row.names=FALSE)
+write.csv( trainTestFileNames, "numpySeg/LMtrainttestfilesLeft.csv", row.names=FALSE)
 rm( ilist )
 gc()
 print("TEST DATA")
@@ -145,7 +145,7 @@ testfilename = as.character(trainTestFileNames[1,grep("test",colnames(trainTestF
 gg = generateDiskPointAndSegmentationData(
     inputImageList = ilistFull,
     pointsetList = plistu,
-    slistR,   # should match the correct side of the landmark
+    slistL,   # should match the correct side of the landmark
     cropping=c(trainTestFileNames$whichPoint[1],tardim), # just train one side first
     segmentationNumbers = 1, # only one here
     selector = !isTrain,
@@ -175,12 +175,11 @@ while( TRUE ) {
     gg = generateDiskPointAndSegmentationData(
         inputImageList = ilistFull,
         pointsetList = plistu,
-        slistR,   # should match the correct side of the landmark
+        slistL,   # should match the correct side of the landmark
         cropping=c(trainTestFileNames$whichPoint[1],tardim), # just train one side first
         segmentationNumbers = 1,
         selector = isTrain,
         smoothHeatMaps = 0,
-#        maskIndex = 2,
         transformType = "scaleShear",
         noiseParameters = c(0, 0.01), # little noise
         sdSimulatedBiasField = 0.0,

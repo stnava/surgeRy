@@ -23,7 +23,7 @@ binary_dice <- function( y_true, y_pred )
 
 
 ## ----howdowereadintime,echo=TRUE,eval=FALSE-----------------------------------
-trtefns = read.csv( "numpySeg/LMtrainttestfiles.csv" ) # critical - same file name
+trtefns = read.csv( "numpySeg/LMtrainttestfilesLeft.csv" ) # critical - same file name
 trnnames = colnames(trtefns)[grep("train", colnames(trtefns) )]
 tstnames = colnames(trtefns)[grep("test", colnames(trtefns) )]
 loadfirst = chooseTrainingFilesToRead( trtefns[,trnnames[c(1,6)]] )
@@ -53,15 +53,15 @@ unet = createUnetModel3D(
 gpuid = Sys.getenv(x = "CUDA_VISIBLE_DEVICES")
 mydf = data.frame()
 epoch = 1
-wtfn=paste0('nbm_right_weights_gpu', gpuid,'.h5')
-csvfn = paste0('nbm_right_weights_gpu', gpuid,'.csv')
+wtfn=paste0('nbm_left_weights_gpu', gpuid,'.h5')
+csvfn = paste0('nbm_left_weights_gpu', gpuid,'.csv')
 
 if ( file.exists( wtfn ) ) load_model_weights_hdf5( unet, wtfn )
 
 # ----training,echo=TRUE,eval=FALSE--------------------------------------------
 mydf = data.frame()
 epoch = 1
-num_epochs = 10000
+num_epochs = 50000
 optimizerE <- tf$keras$optimizers$Adam(1.e-5)
 batchsize = 2
 for (epoch in 1:num_epochs ) {
