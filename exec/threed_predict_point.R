@@ -47,8 +47,10 @@ unetLM = patchMatchR::deepLandmarkRegressionWithHeatmaps( unet,
 unetLM1 = patchMatchR::deepLandmarkRegressionWithHeatmaps( unet,
   activation = 'relu', theta=0 )
 # these are pre-trained weights
-load_model_weights_hdf5( unetLM, 'lm_weights_gpu2.h5', by_name = TRUE, skip_mismatch = TRUE, reshape = TRUE )
-load_model_weights_hdf5( unetLM1, 'lm_weights_gpu2.h5', by_name = TRUE, skip_mismatch = TRUE, reshape = TRUE ) )
+load_model_weights_hdf5( unetLM, 'lm_weights_gpu2.h5',
+  by_name = TRUE, skip_mismatch = TRUE, reshape = TRUE )
+load_model_weights_hdf5( unetLM1, 'lm_weights_gpu2.h5',
+  by_name = TRUE, skip_mismatch = TRUE, reshape = TRUE )
 
 
 
