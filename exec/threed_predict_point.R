@@ -81,7 +81,7 @@ for ( ptwt in myptwts ) {
   for (epoch in epoch:num_epochs ) {
     if ( (epoch %% round(mybs/batchsize) ) == 0 & epoch > 1  ) {
         # refresh the data
-        locfns = chooseTrainingFilesToRead( trtefns[,trnnames] )
+        locfns = chooseTrainingFilesToRead( trtefns[,trnnames], notFirst=TRUE )
         print( locfns[1] )
         Xtr = surgeRy::loadNPData( locfns )
 #        Xtr[[1]] = abind::abind( Xtr[[1]], Xtr[[4]], along=5 )
