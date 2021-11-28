@@ -10,6 +10,52 @@ library( surgeRy )
 np <- import("numpy")
 mytype = "float32"
 
+reparameterize <- function(mean, logvar) {
+  eps <- k_random_normal(shape = mean$shape, dtype = tf$float32)
+  eps * k_exp(logvar * 0.5) + mean
+}
+
+
+# Loss and optimizer ------------------------------------------------------
+
+normal_loglik <- function(sample, mean, logvar ) {
+  loglik <- k_constant(0.5) *
+    (k_log(2 * k_constant(pi)) +
+       logvar +
+       k_exp(-logvar) * (sample - mean) ^ 2)
+  - k_sum(loglik )
+}
+
+compute_kernel <- function(x, y, sigma=tf$cast( 1e1, mytype ) ) {
+  x_size <- k_shape(x)[1]
+  y_size <- k_shape(y)[1]
+  dim <- k_shape(x)[2]
+  tiled_x <- k_tile(
+    k_reshape(x, k_stack(list(x_size, tf$cast(1,"int32"), dim))),
+    k_stack(list(tf$cast(1,"int32"), y_size, tf$cast(1,"int32")))
+  )
+  tiled_y <- k_tile(
+    k_reshape(y, k_stack(list(tf$cast(1,"int32"), y_size, dim))),
+    k_stack(list(x_size, tf$cast(1,"int32"), tf$cast(1,"int32")))
+  )
+  sigmaterm = tf$cast( 2.0, mytype ) * k_square( sigma )
+  k_exp(-k_mean(k_square(tiled_x - tiled_y)/sigmaterm, axis = 3) /
+          k_cast(dim, tf$float32))
+}
+
+compute_mmd <- function( x, y, sigma=tf$cast( 1e1, mytype ), takeMean = FALSE ) {
+  x_kernel <- compute_kernel(x, x, sigma=sigma )
+  y_kernel <- compute_kernel(y, y, sigma=sigma )
+  xy_kernel <- compute_kernel(x, y, sigma=sigma )
+  if ( takeMean ) {
+    myout = k_mean(x_kernel) + k_mean(y_kernel) - 2 * k_mean(xy_kernel)
+  } else {
+    myout = (x_kernel) + (y_kernel) - 2 * (xy_kernel)
+  }
+  return( myout )
+}
+
+
 ## ----howdowereadintime,echo=TRUE,eval=FALSE-----------------------------------
 trtefns = read.csv( "numpyPoints8/LMtrainttestfiles.csv" ) # critical - same file name
 noheatmap = grep("eatmap", names(trtefns) )
@@ -73,12 +119,14 @@ if ( file.exists( wtfn ) ) {
 # ----training,echo=TRUE,eval=FALSE--------------------------------------------
 mydf = data.frame()
 epoch = 1
+mmdWeight = tf$cast( 5.0, mytype )
+myptwts = 0.01
 for ( ptwt in myptwts ) {
   if ( ptwt >= 0.005 ) unetLM = unetLM1
   ptWeight = tf$cast( ptwt, mytype )
   ptWeight2 = tf$cast( 1.0 - ptwt, mytype )
   num_epochs = 200
-  if ( ptwt >= 0.01 ) num_epochs = 2000
+  if ( ptwt >= 0.01 ) num_epochs = 20000
   optimizerE <- tf$keras$optimizers$Adam(2.e-6)
   batchsize = 2
   epoch = 1
@@ -100,10 +148,15 @@ for ( ptwt in myptwts ) {
         dim=c(batchsize,tail(dim(Xtr[[jj]]),4)) ) %>% tf$cast( mytype )
     with(tf$GradientTape(persistent = FALSE) %as% tape, {
       preds = unetLM( datalist[c(1,3:4)] )
+      loss_mmd = tf$cast( 0.0, mytype )
+      for ( k in 1:batchsize) {
+        loss_mmd = loss_mmd + compute_mmd( datalist[[2]][k,,],
+          preds[[2]][k,,], takeMean=TRUE ) * mmdWeight / tf$cast(batchsize,mytype)
+        }
       lossht = tf$cast( 0.0, mytype )
 #      lossht = tf$keras$losses$mse( datalist[[5]], preds[[1]] ) %>% tf$reduce_mean( )
       losspt = tf$keras$losses$mse( datalist[[2]], preds[[2]] ) %>% tf$reduce_mean( )
-      loss = losspt * ptWeight + lossht * ptWeight2
+      loss = losspt * ptWeight + loss_mmd * mmdWeight + lossht * ptWeight2
       })
     unet_gradients <- tape$gradient(loss, unetLM$trainable_variables)
     optimizerE$apply_gradients(purrr::transpose(list(
@@ -113,6 +166,7 @@ for ( ptwt in myptwts ) {
     mydf[ct,'train_htlossW'] = as.numeric( lossht * ptWeight2 )
     mydf[ct,'train_ptloss'] = as.numeric( losspt )
     mydf[ct,'train_htloss'] = as.numeric( lossht )
+    mydf[ct,'train_mmd'] = as.numeric( loss_mmd )
     mydf[ct,'ptWeight'] = as.numeric( ptWeight )
     mydf[ct,'ptWeight2'] = as.numeric( ptWeight2 )
     mydf[ct,'trainData'] = locfns[1]
@@ -120,6 +174,12 @@ for ( ptwt in myptwts ) {
       with(tf$device("/cpu:0"), {
         preds = predict( unetLM, Xte[c(1,3:4)] )
         lossht = tf$cast( 0.0, mytype )
+        local_batch_size = nrow( Xte[[1]] )
+        loss_mmd = tf$cast( 0.0, mytype )
+        for ( k in 1:local_batch_size) {
+          loss_mmd = loss_mmd + compute_mmd( tf$cast(Xte[[2]][k,,],mytype),
+            tf$cast(preds[[2]][k,,],mytype), takeMean=TRUE ) * mmdWeight / tf$cast(local_batch_size,mytype)
+          }
 #        lossht = tf$keras$losses$mse( Xte[[5]], preds[[1]] ) %>% tf$reduce_mean( )
         losspt = tf$keras$losses$mse( Xte[[2]], preds[[2]] ) %>% tf$reduce_mean( )
         loss = tf$cast(losspt, mytype) * ptWeight + tf$cast(lossht, mytype) * ptWeight2
@@ -128,6 +188,7 @@ for ( ptwt in myptwts ) {
       mydf[ct,'test_loss'] = as.numeric( loss )
       mydf[ct,'test_ptloss'] = as.numeric( losspt )
       mydf[ct,'test_htloss'] = as.numeric( lossht )
+      mydf[ct,'test_mmd'] = as.numeric( loss_mmd )
       if ( mydf[ct,'test_ptloss'] <= min(mydf[1:epoch,'test_ptloss'],na.rm=TRUE) ) {
         print(paste("Saving",epoch))
         keras::save_model_weights_hdf5( unetLM, wtfn )
