@@ -59,7 +59,7 @@ for ( k in 1:nFiles ) {
 }
 write.csv( trainTestFileNames, "numpyPoints8/LMtrainttestfiles.csv", row.names=FALSE)
 
-
+print("Begin test generation")
 testfilename = as.character(trainTestFileNames[1,grep("test",colnames(trainTestFileNames))])
 gg = generateDiskPointAndSegmentationData(
     inputImageList = ilist,
@@ -81,6 +81,7 @@ gg = generateDiskPointAndSegmentationData(
 #  temp = as.antsImage( gg[[1]][k,,,,1] )
 #  plot( temp )
 #  }
+print("Begin train generation")
 
 while( TRUE ) {
   for ( k in 1:nFiles ) {
