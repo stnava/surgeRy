@@ -52,12 +52,12 @@ colnamesTT = c(
   paste0("test",gsub(".npy","",types)) )
 colnames( trainTestFileNames ) = colnamesTT
 for ( k in 1:nFiles ) {
-  twogroups = paste0("numpyPoints/",uid[k],c("train","test"))
+  twogroups = paste0("numpyPoints8/",uid[k],c("train","test"))
   npextsTr = paste0( twogroups[1], types )
   npextsTe = paste0( twogroups[2], types )
   trainTestFileNames[k,]=as.character( c(npextsTr,npextsTe) )
 }
-write.csv( trainTestFileNames, "numpyPoints/LMtrainttestfiles.csv", row.names=FALSE)
+write.csv( trainTestFileNames, "numpyPoints8/LMtrainttestfiles.csv", row.names=FALSE)
 
 
 testfilename = as.character(trainTestFileNames[1,grep("test",colnames(trainTestFileNames))])
