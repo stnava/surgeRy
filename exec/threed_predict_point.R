@@ -47,18 +47,18 @@ unetLM = patchMatchR::deepLandmarkRegressionWithHeatmaps( unet,
 unetLM1 = patchMatchR::deepLandmarkRegressionWithHeatmaps( unet,
   activation = 'relu', theta=0 )
 # these are pre-trained weights
-load_model_weights_hdf5( unetLM, 'lm_weights_gpu2.h5' )
-load_model_weights_hdf5( unetLM1, 'lm_weights_gpu2.h5' )
+load_model_weights_hdf5( unetLM, 'lm_weights_gpu2.h5', by_name = TRUE, skip_mismatch = TRUE, reshape = TRUE )
+load_model_weights_hdf5( unetLM1, 'lm_weights_gpu2.h5', by_name = TRUE, skip_mismatch = TRUE, reshape = TRUE ) )
 
 
 
 ## ----seghistory,echo=TRUE,eval=TRUE-------------------------------------------
-gpuid='MYVIGN'
 gpuid = Sys.getenv(x = "CUDA_VISIBLE_DEVICES")
 mydf = data.frame()
 epoch = 1
-wtfn=paste0('lm_weights_gpu', gpuid,'.h5')
-csvfn = paste0('lm_weights_gpu', gpuid,'.csv')
+prefix = paste0( 'lm_nbm_weights_gpu', gpuid )
+wtfn=paste0( prefix,'.h5')
+csvfn = paste0( prefix, '.csv')
 myptwts = c( 0.0001, 0.0005, 0.001, 0.005, 0.01 )
 if ( file.exists( wtfn ) ) {
   unetLM = unetLM1

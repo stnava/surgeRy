@@ -13,16 +13,12 @@ library( patchMatchR )
 library( surgeRy )
 np <- import("numpy")
 mytype = "float32"
-smoothHeat = 3.0
+smoothHeat = 0.0
 downsam = 4   # downsamples images
 # collect your images - a list of lists - multiple entries in each list are fine
 # mydf = read.csv( "manual/ba_notes.csv" )
-# ifns = Sys.glob( paste0( "images/",mydf$ids, "*nocsf.nii.gz" ) )
-# sfnsR = Sys.glob( paste0( "manual/",mydf$ids, "*rightNBMmanual.nii.gz" ) )
-# sfnsL = Sys.glob( paste0( "manual/",mydf$ids, "*leftNBMmanual.nii.gz" ) )
 ifns = Sys.glob( paste0( "images/*nocsf.nii.gz" ) )
-sfnsR = Sys.glob( paste0( "evaluationResults13/*rightNBMX3PARCSRLJLF.nii.gz" ) )
-sfnsL = Sys.glob( paste0( "evaluationResults13/*leftNBMX3PARCSRLJLF.nii.gz" ) )
+sfns = Sys.glob( paste0( "nbm3parcCH13/*SRnbm3CH13.nii.gz" ) )
 ilist = list()
 slist = list()
 plist = list()
@@ -31,13 +27,16 @@ for ( k in 1:length( ifns ) ) {
   image = antsImageRead( ifns[k] ) %>% resampleImage( c( 88, 128, 128 ), useVoxels=TRUE )
   image = iMath( image, "Normalize" )
   mask = thresholdImage( image, 0.01, 1.0 )
-  segL = antsImageRead( sfnsL[k] ) %>% thresholdImage( 1, 3 )
-  segR = antsImageRead( sfnsR[k] ) %>% thresholdImage( 1, 3 )
+  seg = antsImageRead( sfns[k] )
   ilist[[k]] = list( image, mask )
-  ptmat = rbind( getCentroids( segL )[,1:3], getCentroids( segR )[,1:3] )
+  ptmat = getCentroids( seg )[,1:3]
   plist[[k]] = ptmat
+  if ( k == 1 ) {
+    npoints = nrow( ptmat )
+    print(paste("expect:",npoints))
+  }
+  stopifnot( nrow( ptmat ) == npoints )
 }
-
 # identify the number of segmentation classes
 isTrain = c( rep(TRUE,length(ilist)-20), FALSE )
 
