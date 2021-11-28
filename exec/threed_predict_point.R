@@ -12,6 +12,8 @@ mytype = "float32"
 
 ## ----howdowereadintime,echo=TRUE,eval=FALSE-----------------------------------
 trtefns = read.csv( "numpyPoints8/LMtrainttestfiles.csv" ) # critical - same file name
+noheatmap = grep("eatmap", names(trtefns) )
+trtefns = trtefns[,-noheatmap]
 trnnames = colnames(trtefns)[grep("train", colnames(trtefns) )]
 tstnames = colnames(trtefns)[grep("test", colnames(trtefns) )]
 locfns = chooseTrainingFilesToRead( trtefns[,trnnames] )
@@ -98,7 +100,8 @@ for ( ptwt in myptwts ) {
         dim=c(batchsize,tail(dim(Xtr[[jj]]),4)) ) %>% tf$cast( mytype )
     with(tf$GradientTape(persistent = FALSE) %as% tape, {
       preds = unetLM( datalist[c(1,3:4)] )
-      lossht = tf$keras$losses$mse( datalist[[5]], preds[[1]] ) %>% tf$reduce_mean( )
+      lossht = tf$cast( 0.0, mytype )
+#      lossht = tf$keras$losses$mse( datalist[[5]], preds[[1]] ) %>% tf$reduce_mean( )
       losspt = tf$keras$losses$mse( datalist[[2]], preds[[2]] ) %>% tf$reduce_mean( )
       loss = losspt * ptWeight + lossht * ptWeight2
       })
@@ -116,7 +119,8 @@ for ( ptwt in myptwts ) {
     if( epoch > 3 & epoch %% 50 == 0 ) {
       with(tf$device("/cpu:0"), {
         preds = predict( unetLM, Xte[c(1,3:4)] )
-        lossht = tf$keras$losses$mse( Xte[[5]], preds[[1]] ) %>% tf$reduce_mean( )
+        lossht = tf$cast( 0.0, mytype )
+#        lossht = tf$keras$losses$mse( Xte[[5]], preds[[1]] ) %>% tf$reduce_mean( )
         losspt = tf$keras$losses$mse( Xte[[2]], preds[[2]] ) %>% tf$reduce_mean( )
         loss = tf$cast(losspt, mytype) * ptWeight + tf$cast(lossht, mytype) * ptWeight2
       })
