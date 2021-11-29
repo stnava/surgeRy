@@ -13,6 +13,7 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 set.seed( 000 )
+myeval=TRUE
 ```
 
 # Overview of `surgeRy`
@@ -110,8 +111,9 @@ the associated masks, the points, coord conv output and a heatmap.  These
 all derive from the image lists we defined above.  This stuff will be run
 on CPU separately from the training loop.
 
-```{r disk,echo=TRUE,eval=FALSE}
+```{r disk,echo=TRUE,eval=myeval}
 nFiles = 5
+dir.create( "numpy", showWarnings=FALSE )
 if ( ! exists( "uid" ) )
   uid = paste0("LM",sample(1:1000000,nFiles),"Z")
 types = c("Images.npy", "pointset.npy", "mask.npy", "coordconv.npy", "heatmap.npy" )
@@ -142,7 +144,7 @@ case as we keep it constant during training.  Write as many as you want for
 your application
 
 
-```{r augment,echo=TRUE,eval=FALSE}
+```{r augment,echo=TRUE,eval=myeval}
 testfilename = as.character(trainTestFileNames[1,grep("test",colnames(trainTestFileNames))])
 gg = generateDiskPointAndSegmentationData(
     inputImageList = ilist,
@@ -172,7 +174,7 @@ a CPU thread separate from the GPU training loop.  In practice, you may keep
 the parameters the same across train and test or set minimal augmentation
 parameters for test data.
 
-```{r augmenttrain,echo=TRUE,eval=FALSE}
+```{r augmenttrain,echo=TRUE,eval=myeval}
 while( TRUE ) {
   for ( k in 1:nFiles ) {
     trnfilename = as.character(trainTestFileNames[k,grep("train",colnames(trainTestFileNames))])

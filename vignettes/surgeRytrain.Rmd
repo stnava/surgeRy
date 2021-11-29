@@ -17,6 +17,7 @@ rids <- function( x, downsammer=4 ) {
   img = ri( x )
   resampleImage( img, dim(img)/downsammer, useVoxels=TRUE )
 }
+myeval=TRUE
 ```
 
 ## Assumptions for this vignette
@@ -81,7 +82,7 @@ through a batch.
 
 **Run on GPU thread when setting up**
 
-```{r howdowereadintime,echo=TRUE,eval=FALSE}
+```{r howdowereadintime,echo=TRUE,eval=myeval}
 trtefns = read.csv( "numpy/LMtrainttestfiles.csv" ) # critical - same file name
 trnnames = colnames(trtefns)[grep("train", colnames(trtefns) )]
 tstnames = colnames(trtefns)[grep("test", colnames(trtefns) )]
@@ -142,7 +143,7 @@ at least, that is what's intended.
 
 **Run on GPU thread when setting up**
 
-```{r training,echo=TRUE,eval=FALSE}
+```{r training,echo=TRUE,eval=myeval}
 epoch = 1
 for ( ptwt in c( 0.001, 0.005, 0.01 ) ) {
   if ( ptwt == 0.01 ) unetLM = unetLM1
@@ -208,7 +209,7 @@ take a look at the training-test convergence curves.
 
 **Run on CPU thread**
 
-```{r traintestcurves,eval=FALSE,echo=TRUE}
+```{r traintestcurves,eval=myeval,echo=TRUE}
 mydf = read.csv( 'lm_weights_gpuMYVIGN.csv' )
 mydfnona = mydf[ !is.na( mydf$test_loss),  ]
 plot( ts( mydfnona ) )
@@ -220,7 +221,7 @@ plot( ts( mydfnona ) )
 
 Visualize the predicted points.
 
-```{r vizp,echo=TRUE,eval=FALSE}
+```{r vizp,echo=TRUE,eval=myeval}
 layout(matrix(1:2,nrow=1))
 wsub = 1
 testimg = as.antsImage( Xte[[1]][wsub,,,1] ) %>%
@@ -247,7 +248,7 @@ plot( testimg, iMath( predPointsImage, "GD",2) )
 
 Visualize the predicted images.
 
-```{r vizi,echo=TRUE,eval=FALSE}
+```{r vizi,echo=TRUE,eval=myeval}
 layout(matrix(1:8,nrow=2))
 wsub = 6
 for ( wpt in 1:4 ) {
