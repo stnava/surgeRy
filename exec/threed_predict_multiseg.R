@@ -53,12 +53,12 @@ weighted_dice <- function( y_true, y_pred, weights=c(1.0,1.0) )
 trtefns = read.csv( "numpySegM/multisegtrainttestfiles.csv" ) # critical - same file name
 trnnames = colnames(trtefns)[grep("train", colnames(trtefns) )]
 tstnames = colnames(trtefns)[grep("test", colnames(trtefns) )]
-whichcolstouse
+whichcolstouse = c( 1, 5 )
 loadfirst = chooseTrainingFilesToRead( trtefns[,trnnames[whichcolstouse]] )
 Xtr = surgeRy::loadNPData( loadfirst )
 mybs = dim( Xtr[[1]] )[1]
 Xte = surgeRy::loadNPData( trtefns[1,tstnames[whichcolstouse]] )
-nclasstoseg = 0 # GET THIS FROM Xtr/Xte
+nclasstoseg = tail( dim( Xte[[2]] ), 1 ) # GET THIS FROM Xtr/Xte
 
 nlayers = 4   # for unet
 # set up the network - all parameters below could be optimized for the application
@@ -74,15 +74,13 @@ unet = createUnetModel3D(
        dropoutRate = 0,
        weightDecay = 0,
        additionalOptions = c( "nnUnetActivationStyle" ),
-       mode = c("sigmoid")
+       mode = c("classification")
      )
-# load_model_weights_hdf5( unet, 'nbm_left_weights_gpu1good.h5',
-#  by_name = TRUE, skip_mismatch = TRUE, reshape = TRUE )
 gpuid = Sys.getenv(x = "CUDA_VISIBLE_DEVICES")
 mydf = data.frame()
 epoch = 1
-wtfn=paste0('nbm_left_weights_gpu', gpuid,'.h5')
-csvfn = paste0('nbm_left_weights_gpu', gpuid,'.csv')
+wtfn=paste0('mseg_weights_gpu', gpuid,'.h5')
+csvfn = paste0('mseg_weights_gpu', gpuid,'.csv')
 
 if ( file.exists( wtfn ) ) load_model_weights_hdf5( unet, wtfn )
 
@@ -93,7 +91,7 @@ num_epochs = 50000
 optimizerE <- tf$keras$optimizers$Adam(1.e-5)
 batchsize = 2
 for (epoch in 1:num_epochs ) {
-    if ( (epoch %% round(mybs/batchsize) ) == 0 & epoch > 1  ) {
+    if ( (epoch %% round(mybs/batchsize) ) == 0 & epoch > 1 ) {
       loadfirst = chooseTrainingFilesToRead( trtefns[,trnnames[whichcolstouse]], notFirst=TRUE )
       Xtr = surgeRy::loadNPData( loadfirst )
       }
