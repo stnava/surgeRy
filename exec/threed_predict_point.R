@@ -122,12 +122,12 @@ epoch = 1
 mmdWeight = tf$cast( 5.0, mytype )
 myptwts = 0.01
 for ( ptwt in myptwts ) {
-  if ( ptwt >= 0.005 ) unetLM = unetLM1
+  if ( ptwt >= myptwts[4] ) unetLM = unetLM1
   ptWeight = tf$cast( ptwt, mytype )
   ptWeight2 = tf$cast( 1.0 - ptwt, mytype )
   num_epochs = 200
-  if ( ptwt >= 0.01 ) num_epochs = 20000
-  optimizerE <- tf$keras$optimizers$Adam(2.e-6)
+  if ( ptwt >= myptwts[5] ) num_epochs = 20000
+  optimizerE <- tf$keras$optimizers$Adam(2.e-5)
   batchsize = 2
   epoch = 1
   for (epoch in epoch:num_epochs ) {
@@ -199,33 +199,3 @@ for ( ptwt in myptwts ) {
   write.csv( mydf, csvfn, row.names=FALSE )
   }
 }
-
-derkaderkaderkaderkaderkaderkaderkaderkaderkaderkaderkaderkaderkaderkaderkaderka
-
-# ----traintestcurves,eval=FALSE,echo=TRUE-------------------------------------
-mydf = read.csv( paste0( "lm_weights_gpu", gpuid, ".csv" ) )
-mydfnona = mydf[ !is.na( mydf$test_loss),  ]
-plot( ts( mydfnona ) )
-
-
-# ----vizp,echo=TRUE,eval=FALSE------------------------------------------------
-layout(matrix(1:2,nrow=1))
-wsub = 1
-testimg = as.antsImage( Xte[[1]][wsub,,,1] ) %>%
-  antsCopyImageInfo2( rids( 1 ) )
-preds = predict( unetLM, Xte[c(1,3:4)] )
-# these are in physical space
-predPoints = as.array( preds[[2]] )[wsub,,]
-truPoints = Xte[[2]][wsub,,] # true points
-print(paste("Error",norm(truPoints-predPoints,"F")))
-print(paste("%Error",norm(truPoints-predPoints,"F")/norm(truPoints,"F")*100,"%"))
-truIndex = round( antsTransformPhysicalPointToIndex( testimg, truPoints ) )
-predIndex = round( antsTransformPhysicalPointToIndex( testimg, predPoints ) )
-# make point images
-truPointsImage = predPointsImage = testimg * 0
-for ( j in 1:nrow( truPoints ) ) {
-  truPointsImage[truIndex[j,1],truIndex[j,2]]=j
-  predPointsImage[predIndex[j,1],predIndex[j,2]]=j
-  }
-plot( testimg, iMath( truPointsImage, "GD",2) )
-plot( testimg, iMath( predPointsImage, "GD",2) )
