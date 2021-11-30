@@ -50,7 +50,7 @@ weighted_dice <- function( y_true, y_pred, weights=c(1.0,1.0) )
 
 
 ## ----howdowereadintime,echo=TRUE,eval=FALSE-----------------------------------
-trtefns = read.csv( "numpySeg/multisegtrainttestfiles.csv" ) # critical - same file name
+trtefns = read.csv( "numpySegM/multisegtrainttestfiles.csv" ) # critical - same file name
 trnnames = colnames(trtefns)[grep("train", colnames(trtefns) )]
 tstnames = colnames(trtefns)[grep("test", colnames(trtefns) )]
 whichcolstouse

@@ -107,7 +107,7 @@ colnamesTT = c(
   paste0("test",gsub(".npy","",types)) )
 colnames( trainTestFileNames ) = colnamesTT
 for ( k in 1:nFiles ) {
-  twogroups = paste0("numpySeg/",uid[k],c("train","test"))
+  twogroups = paste0("numpySegM/",uid[k],c("train","test"))
   npextsTr = paste0( twogroups[1], types )
   npextsTe = paste0( twogroups[2], types )
   trainTestFileNames[k,]=as.character( c(npextsTr,npextsTe) )
@@ -121,7 +121,7 @@ trainTestFileNames$lowZ = lodim[3]
 trainTestFileNames$patchX = 64
 trainTestFileNames$patchY = 64
 trainTestFileNames$patchZ = 32
-write.csv( trainTestFileNames, "numpySeg/multisegtrainttestfiles.csv", row.names=FALSE)
+write.csv( trainTestFileNames, "numpySegM/multisegtrainttestfiles.csv", row.names=FALSE)
 rm( ilist )
 gc()
 print("TEST DATA")
