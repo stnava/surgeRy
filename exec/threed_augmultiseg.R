@@ -98,7 +98,7 @@ if ( isTest ) isTrain = c( rep(TRUE,3), FALSE )
 
 nFiles = 24
 if ( ! exists( "uid" ) )
-  uid = paste0("LM",sample(1:1000000,nFiles),"Z")
+  uid = paste0("MS",sample(1:1000000,nFiles),"Z")
 types = c("images.npy", "pointset.npy", "mask.npy", "coordconv.npy", "segmentation.npy" )
 nmats = length( types ) # 5 arrays out
 trainTestFileNames = data.frame( matrix("",nrow=nFiles,ncol=nmats*2))
