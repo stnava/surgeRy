@@ -20,11 +20,14 @@
 chooseTrainingFilesToRead <- function( fileDataFrame, random=FALSE, notFirst=FALSE ) {
   # take the most recent of all file mod times for all rows
   extime = Sys.time()
-  mytimes = rep( extime, nrow( fileDataFrame ) )
-  for ( i in 1:nrow(fileDataFrame) ) {
-    localtimes = rep( extime, ncol(fileDataFrame) )
-    for ( j in 1:ncol(fileDataFrame) ) {
-      myfn = as.character( fileDataFrame[i,j] )
+  fex = file.exists(fileDataFrame[,1])
+  if ( sum( fex == TRUE )  < 1 ) stop("Training files do not exist yet")
+  fileDataFrameUse = fileDataFrame[ fex, ]
+  mytimes = rep( extime, nrow( fileDataFrameUse ) )
+  for ( i in 1:nrow(fileDataFrameUse) ) {
+    localtimes = rep( extime, ncol(fileDataFrameUse) )
+    for ( j in 1:ncol(fileDataFrameUse) ) {
+      myfn = as.character( fileDataFrameUse[i,j] )
       if ( ! file.exists( myfn ) ) {
         localtimes[j] = NA
       } else localtimes[j] = R.utils::lastModified( myfn )
@@ -34,11 +37,11 @@ chooseTrainingFilesToRead <- function( fileDataFrame, random=FALSE, notFirst=FAL
   indices = rev(order(mytimes))
   myindex = indices[2] # default choice
   if ( notFirst ) {
-    return( fileDataFrame[ sample( indices[-1], 1 ),] )
+    return( fileDataFrameUse[ sample( indices[-1], 1 ),] )
   } else if ( random ) {
-    return( fileDataFrame[ sample( indices, 1 ),] )
+    return( fileDataFrameUse[ sample( indices, 1 ),] )
   }
-  return( fileDataFrame[myindex,] )
+  return( fileDataFrameUse[myindex,] )
 }
 
 #' Read augmentation data from on disk storage
