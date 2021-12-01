@@ -610,7 +610,7 @@ generateDiskPointAndSegmentationData  <- function(
     }
   np$save( numpynames[ccnameindex], Xcc )
   outlist[[length(outlist)+1]] = Xcc
-  outnames[length(outnames)+1]='coodconv'
+  outnames[length(outnames)+1]='coordconv'
   if ( smoothHeatMaps > 0 ) {
     np$save( numpynames[heatmapnameindex], Yh )
     outlist[[length(outlist)+1]] = Yh
