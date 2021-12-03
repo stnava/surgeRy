@@ -67,10 +67,10 @@ tstnames = colnames(trtefns)[grep("test", colnames(trtefns) )]
 whichcolstouse = c( 1, 5 )
 loadfirst = trtefns[1,trnnames[whichcolstouse]]
 Xtr = surgeRy::loadNPData( loadfirst )
-Xtr[[2]] = add_background( Xtr[[2]] )
+# Xtr[[2]] = add_background( Xtr[[2]] )
 mybs = dim( Xtr[[1]] )[1]
 Xte = surgeRy::loadNPData( trtefns[1,tstnames[whichcolstouse]] )
-Xte[[2]] = add_background( Xte[[2]] )
+# Xte[[2]] = add_background( Xte[[2]] )
 nclasstoseg = tail( dim( Xte[[2]] ), 1 ) # GET THIS FROM Xtr/Xte
 #############################################################################$$$
 nlayers = 4   # for unet
@@ -85,15 +85,14 @@ unet = createUnetModel3D(
        strides = 2,
        dropoutRate = 0,
        weightDecay = 0,
-#       additionalOptions = c( "attentionGating" ),
+       additionalOptions = c( "attentionGating", "nnUnetActivationStyle" ),
        mode = c( "classification" )
      )
-unet2 = clone_model( unet )
 gpuid = Sys.getenv(x = "CUDA_VISIBLE_DEVICES")
 mydf = data.frame()
 epoch = 1
-wtfn=paste0('mseg_weights_gpu', gpuid,'.h5')
-csvfn = paste0('mseg_weights_gpu', gpuid,'.csv')
+wtfn=paste0('nbm3parc_weights_gpu', gpuid,'.h5')
+csvfn = paste0('nbm3parc_weights_gpu', gpuid,'.csv')
 
 # if ( file.exists( wtfn ) ) load_model_weights_hdf5( unet, wtfn, T, T, T )
 
@@ -101,14 +100,15 @@ csvfn = paste0('mseg_weights_gpu', gpuid,'.csv')
 mydf = data.frame()
 epoch = 1
 num_epochs = 50000
-optimizerE <- tf$keras$optimizers$Adam(1.e-5)
+optimizerE <- tf$keras$optimizers$Adam(1.e-4)
 batchsize = 2
-for (epoch in 1:num_epochs ) {
-    if ( (epoch %% round(mybs/batchsize) ) == 0 & epoch > 1 ) {
-      fe = file.exists( trtefns[,trnnames[whichcolstouse][1]])
+epoch = 1
+for (epoch in epoch:num_epochs ) {
+    fe = file.exists( trtefns[,trnnames[whichcolstouse][1]])
+    if ( (epoch %% round(mybs/batchsize) ) == 0 & epoch > 1 & sum(fe) > 1 ) {
       loadfirst = chooseTrainingFilesToRead( trtefns[fe,trnnames[whichcolstouse]], random=TRUE, notFirst=TRUE)
       Xtr = surgeRy::loadNPData( loadfirst )
-      Xtr[[2]] = add_background( Xtr[[2]] )
+#      Xtr[[2]] = add_background( Xtr[[2]] )
       }
     ct = nrow( mydf ) + 1
     mysam = sample( 1:nrow(Xtr[[1]]), batchsize )
@@ -145,16 +145,15 @@ for (epoch in 1:num_epochs ) {
         x1 = tf$cast(Xte[[2]],mytype)
         x2 = tf$cast(preds, mytype )
         loss = multilabel_dice_coefficient()( x1, x2 )
-        loss2 = binary_dice(  x1[,,,,3], x2[,,,,3] )
-        loss1 = binary_dice(  x1[,,,,2], x2[,,,,2] )
+#        for ( j in 1:4 ) for ( k in 1:16 ) print( binary_dice( x1[k,,,,j], x2[k,,,,j] ) )
 #        loss = weighted_dice( tf$cast(Xte[[2]],mytype), tf$cast(preds, mytype ))
 #        loss = tf$keras$losses$categorical_crossentropy( tf$cast(Xte[[2]],mytype), tf$cast(preds, mytype ) ) %>% tf$reduce_mean()
 #    loss = tf$nn$sigmoid_cross_entropy_with_logits( tf$cast(Xte[[2]],mytype), tf$cast(preds, mytype ) ) %>% tf$reduce_mean()
 #      loss = tf$keras$losses$categorical_crossentropy( tf$cast(Xte[[2]],mytype), tf$cast(preds, mytype ) ) %>% tf$reduce_mean()
       })
       # compute the same thing in test data
-      mydf[ct,'test_loss1'] = as.numeric( loss1 )
-      mydf[ct,'test_loss2'] = as.numeric( loss2 )
+#      mydf[ct,'test_loss1'] = as.numeric( loss1 )
+#      mydf[ct,'test_loss2'] = as.numeric( loss2 )
       mydf[ct,'test_loss'] = as.numeric( loss )
       loe = epoch - 200 # best recent result
       if ( loe < 1 ) loe = 1

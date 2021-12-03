@@ -16,6 +16,7 @@ mytype = "float32"
 smoothHeat = 0.0
 downsam = 4   # downsamples images
 segnums = c( 1, 2 ) # the segmentation labels to predict
+segnums = 0:3
 ########################
 nlayers = 4   # for unet
 nPoints = 8   # of points the net predicts
@@ -46,6 +47,8 @@ npns = paste0("numpyinference/INF",types)
 
 ifns = Sys.glob( paste0( "images/*nocsf.nii.gz" ) )
 sfns = Sys.glob( paste0( "nbm3parcCH13/*SRnbm3CH13.nii.gz" ) )
+sfnsL = Sys.glob( paste0( "evaluationResults13/*leftNBMX3PARCSRLJLF.nii.gz" ) )
+sfnsR = Sys.glob( paste0( "evaluationResults13/*rightNBMX3PARCSRLJLF.nii.gz" ) )
 
 ntestsim = 16
 if ( ! exists( "isTest" ) ) isTest = FALSE
@@ -60,22 +63,26 @@ slist = list()
 plistu = list()
 print("COLLECT DATA")
 lodim = c( 88, 128, 128 )
+ct = 1
 for ( k in 1:length( ifns ) ) {
   print(k)
   image = iMath( antsImageRead( ifns[k] ), "Normalize" )
-  ilistFull[[k]] = list( image )
+  ilistFull[[ct]] = list( image )
+  ilistFull[[ct+1]] = list( image )
   image = antsImageRead( ifns[k] ) %>% resampleImage( lodim, useVoxels=TRUE )
   image = iMath( image, "Normalize" )
   mask = thresholdImage( image, 0.01, 1.0 )
-  ilist[[k]] = list( image, mask )
-  seg = antsImageRead( sfns[k] )
-  slist[[k]] = seg
+  ilist[[1]] = list( image, mask )
+  seg = antsImageRead( sfnsL[k] )
+  slist[[ct]] = seg
+  seg = antsImageRead( sfnsR[k] )
+  slist[[ct+1]] = seg
   ptmat = rbind( getCentroids( mask )[,1:3], getCentroids( mask )[,1:3] )
-  plistu[[k]] = ptmat
+  plistu[[ct]] = ptmat
   nsim = 4
   gg = generateDiskPointAndSegmentationData(
-      inputImageList = ilist[k],
-      pointsetList = plistu[k],
+      inputImageList = ilist,
+      pointsetList = list( matrix(0,ncol=3,nrow=1)),
       maskIndex = 2,
       transformType = "scaleShear",
       noiseParameters = c(0, 0.001),
@@ -86,14 +93,19 @@ for ( k in 1:length( ifns ) ) {
       numberOfSimulations = nsim
       )
    unetp = predict( unet, list( gg[[1]], gg[[3]], gg[[4]] ) )
-   mattoavg = matrix( 0, nrow=2, ncol=3 ) #
-   for ( jj in 1:nsim ) mattoavg = mattoavg + (unetp[[2]][jj,1:2,])/nsim
-   plistu[[k]] = matrix( colMeans(mattoavg), nrow=1 )
+   mattoavg = matrix( 0, nrow=1, ncol=3 ) #
+   for ( jj in 1:nsim ) mattoavg = mattoavg + colMeans(unetp[[2]][jj,3:5,])/nsim
+   plistu[[ct]] = matrix( mattoavg, nrow=1 )
+   # repeat the same thing for the right side
+   mattoavg = matrix( 0, nrow=1, ncol=3 ) #
+   for ( jj in 1:nsim ) mattoavg = mattoavg + colMeans(unetp[[2]][jj,6:8,])/nsim
+   plistu[[ct+1]] = matrix( mattoavg, nrow=1 )
+   ct = ct + 2
 }
 
 
 # identify the number of segmentation classes
-if ( ! isTest ) isTrain = c( rep(TRUE,length(ilist)-20), FALSE )
+if ( ! isTest ) isTrain = c( rep(TRUE,length(ilistFull)-8), FALSE )
 if ( isTest ) isTrain = c( rep(TRUE,3), FALSE )
 
 nFiles = 24
