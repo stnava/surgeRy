@@ -12,7 +12,7 @@ steps: &steps
         command: sudo apt-get update && sudo apt install jags && sudo apt-get install -y r-cran-rgl
     - run:
         name: Install Matrix
-        command: R -e "devtools::install_cran('Matrix'); devtools::install_cran('remotes'); remotes::install_github('stnava/patchMatchR')"
+        command: R -e "devtools::install_cran('Matrix'); devtools::install_cran('credentials'); credentials::set_github_pat( );remotes::install_github('stnava/patchMatchR')"
     - run:
         name: Install neuroconductor
         command: R -e "source('https://neuroconductor.org/neurocLite.R')"
