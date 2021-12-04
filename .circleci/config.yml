@@ -24,10 +24,10 @@ steps: &steps
         command: Rscript -e "install.packages(c('wesanderson','ggthemes','ggstatsplot'))"
     - run:
         name: Install ANTsRNet
-        command: Rscript -e "Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = "true"); remotes::install_github( 'ANTsX/ANTsRNet' ) "
+        command: Rscript -e " remotes::install_github( 'ANTsX/ANTsRNet' ) "
     - run:
         name: Install patchMatchR
-        command: Rscript -e "Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = "true"); remotes::install_github( 'stnava/patchMatchR' ) "
+        command: Rscript -e "Sys.setenv("remotes::install_github( 'stnava/patchMatchR' ) "
     - run:
         name: Build package
         command: R CMD build .
