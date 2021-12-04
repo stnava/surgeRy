@@ -225,14 +225,14 @@ generateDiskData  <- function(
       }
     if ( ! segmentationsArePoints ) {
       for ( j in 1:nClasses ) {
-        temp = thresholdImage( data$simulatedSegmentationImages[[k]][[1]],
+        temp = thresholdImage( data$simulatedSegmentationImages[[k]],
           segmentationNumbers[j], segmentationNumbers[j] )
         if ( myimgdim == 2 ) Y[k, , , j ] = as.array( temp )
         if ( myimgdim == 3 ) Y[k, , , , j ] = as.array( temp )
         }
       } else {
         for ( j in 1:nClasses ) {
-          temp = thresholdImage( data$simulatedSegmentationImages[[k]][[1]],
+          temp = thresholdImage( data$simulatedSegmentationImages[[k]],
             segmentationNumbers[j], segmentationNumbers[j]  )
           mypt = getCentroids( temp, clustparam=0  )
           if ( smoothHeatMaps > 0 & ( length(mypt) > 0 ) ) {
@@ -498,7 +498,6 @@ generateDiskPointAndSegmentationData  <- function(
   if ( length( grep("coordconv",numpynames) ) == 0 )
     stop( "numpynames must have a name containing the string coordconv" )
   ccnameindex = grep("coordconv",numpynames)
-
   if ( hasPoints & ! hasSeg ) {
     data <- dataAugmentation(
       inputImageList[selector],
@@ -557,7 +556,7 @@ generateDiskPointAndSegmentationData  <- function(
       }
     if ( hasSeg ) {
       for ( j in 1:nClasses ) {
-        temp = thresholdImage( data$simulatedSegmentationImages[[k]][[1]],
+        temp = thresholdImage( data$simulatedSegmentationImages[[k]],
           segmentationNumbers[j], segmentationNumbers[j] )
         if ( doCrop )
           temp = specialCrop( temp,
@@ -597,6 +596,7 @@ generateDiskPointAndSegmentationData  <- function(
         }
       }
     }
+
   np$save( numpynames[1], X )
   np$save( numpynames[pointsetnameindex], Ypt )
   outlist = list(X,Ypt)
@@ -619,6 +619,8 @@ generateDiskPointAndSegmentationData  <- function(
     outlist[[length(outlist)+1]] = Yh
     outnames[length(outnames)+1]='heatmaps'
     }
+  outlist[[length(outlist)+1]] = data$subjectIDs
+  outnames[length(outnames)+1]='subjectIDs'
   names( outlist ) = outnames
   return( outlist  )
   }

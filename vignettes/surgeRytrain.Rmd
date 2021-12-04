@@ -17,7 +17,7 @@ rids <- function( x, downsammer=4 ) {
   img = ri( x )
   resampleImage( img, dim(img)/downsammer, useVoxels=TRUE )
 }
-myeval=TRUE
+myeval=FALSE
 ```
 
 ## Assumptions for this vignette
