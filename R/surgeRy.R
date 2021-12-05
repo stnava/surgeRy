@@ -94,7 +94,7 @@ averageNumpyArraysFromDisk <- function( numpynames, batchReduce=TRUE ) {
       averagedArray = averagedArray + np$load( numpynames[ x ] ) * multiplier
     }
   }
-  if ( ! batchRedude ) return( averagedArray )
+  if ( ! batchReduce ) return( averagedArray )
   nrows = head( dim( averagedArray ), 1 )
   if ( length(dim(myavg)) == 3 ) {
     averagedArrayB = averagedArray[1,,]/nrows
