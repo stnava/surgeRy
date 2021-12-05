@@ -118,6 +118,18 @@ averageNumpyArraysFromDisk <- function( numpynames, batchReduce=TRUE ) {
 }
 
 
+
+#' Average numpy array across batch
+#'
+#' @param numpyArray the array to average across rows (batch)
+#' @return the averaged arrays
+#' @author Avants BB
+#' @export
+averageNumpyArray <- function( numpyArray ) {
+  as.array( tf$reduce_mean( tf$cast(arr,'float32'), axis=0L ))
+}
+
+
 #' Generate segmentation-based augmentation data with on disk storage
 #'
 #' @param inputImageList list of lists of input images to warp.  The internal
@@ -167,6 +179,7 @@ averageNumpyArraysFromDisk <- function( numpynames, batchReduce=TRUE ) {
 #' @importFrom patchMatchR coordinateImages
 #' @importFrom ANTsRNet dataAugmentation
 #' @importFrom reticulate import
+#' @importFrom utils head tail
 #' @examples
 #' library( ANTsR )
 #' ilist = list( list( ri(1) ), list( ri(2) ) )

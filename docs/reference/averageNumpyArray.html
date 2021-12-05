@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Average numpy arrays from disk — averageNumpyArraysFromDisk • surgeRy</title>
+<title>Average numpy array across batch — averageNumpyArray • surgeRy</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Average numpy arrays from disk — averageNumpyArraysFromDisk" />
-<meta property="og:description" content="Average numpy arrays from disk" />
+<meta property="og:title" content="Average numpy array across batch — averageNumpyArray" />
+<meta property="og:description" content="Average numpy array across batch" />
 
 
 
@@ -132,27 +132,23 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Average numpy arrays from disk</h1>
+    <h1>Average numpy array across batch</h1>
     <small class="dont-index">Source: <a href='https://github.com/stnava/surgeRy/blob/master/R/surgeRy.R'><code>R/surgeRy.R</code></a></small>
-    <div class="hidden name"><code>averageNumpyArraysFromDisk.Rd</code></div>
+    <div class="hidden name"><code>averageNumpyArray.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Average numpy arrays from disk</p>
+    <p>Average numpy array across batch</p>
     </div>
 
-    <pre class="usage"><span class='fu'>averageNumpyArraysFromDisk</span><span class='op'>(</span><span class='va'>numpynames</span>, batchReduce <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>averageNumpyArray</span><span class='op'>(</span><span class='va'>numpyArray</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>numpynames</th>
-      <td><p>the names of the numpy on disk files to average</p></td>
-    </tr>
-    <tr>
-      <th>batchReduce</th>
-      <td><p>boolean to average over the rows at the end</p></td>
+      <th>numpyArray</th>
+      <td><p>the array to average across rows (batch)</p></td>
     </tr>
     </table>
 
