@@ -126,7 +126,7 @@ averageNumpyArraysFromDisk <- function( numpynames, batchReduce=TRUE ) {
 #' @author Avants BB
 #' @export
 averageNumpyArray <- function( numpyArray ) {
-  as.array( tf$reduce_mean( tf$cast(arr,'float32'), axis=0L ))
+  as.array( tf$reduce_mean( tf$cast(numpyArray,'float32'), axis=0L ))
 }
 
 
