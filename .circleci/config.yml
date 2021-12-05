@@ -12,47 +12,35 @@ steps: &steps
         command: sudo apt-get update && sudo apt install jags && sudo apt-get install -y r-cran-rgl
     - run:
         name: Install Matrix
-        command: R -e "devtools::install_cran('Matrix'); devtools::install_cran('credentials'); credentials::set_github_pat( );remotes::install_github('stnava/patchMatchR')"
+        command: R -e "devtools::install_cran('Matrix'); devtools::install_cran('credentials')"
     - run:
         name: Install neuroconductor
         command: R -e "source('https://neuroconductor.org/neurocLite.R')"
-    - run:
-        name: Install package neuroconductor dependencies manually
-        command: Rscript -e "source('https://neuroconductor.org/neurocLite.R'); neuro_install(c('ITKR', 'ANTsRCore','ANTsR'))"
+#    - run:
+#        name: Install package neuroconductor dependencies manually
+#        command: Rscript -e "source('https://neuroconductor.org/neurocLite.R'); neuro_install(c('ITKR', 'ANTsRCore','ANTsR'))"
     - run:
         name: Install package dependencies manually
         command: Rscript -e "install.packages(c('wesanderson','ggthemes','ggstatsplot'))"
-    - run:
-        name: Install ANTsRNet
-        command: Rscript -e " remotes::install_github( 'ANTsX/ANTsRNet' ) "
-    - run:
-        name: Install patchMatchR
-        command: Rscript -e "Sys.setenv("remotes::install_github( 'stnava/patchMatchR' ) "
     - run:
         name: Build package
         command: R CMD build .
     - run:
         name: Check package
         command: R CMD check *tar.gz
-#    - store_artifacts:
-#        path: ci4rB.Rcheck/
-#    - save_cache:
-#        key: cache-{{ .Environment.CIRCLE_JOB }}
-#        paths:
-#          - "/usr/local/lib/R/site-libraryX"
 
 jobs:
   release:
     docker:
-      - image: rocker/verse:3.6.0
+      - image: stnava/antsr:latest
     <<: *steps
   oldrel:
     docker:
-      - image: rocker/verse:3.5.3
+      - image: stnava/antsr:latest
     <<: *steps
   devel:
     docker:
-      - image: rocker/verse:devel
+      - image: stnava/antsr:latest
     <<: *steps
 
 workflows:
@@ -60,5 +48,5 @@ workflows:
   all:
     jobs:
       - release
-      - oldrel
+#      - oldrel
 #      - devel
