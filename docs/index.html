@@ -108,7 +108,10 @@
 <p>The pre-release version of the package can be pulled from GitHub using the <a href="https://github.com/r-lib/devtools">devtools</a> package:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R">    <span class="co"># install.packages("devtools")</span>
-    <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">"stnava/surgeRy"</span>, build_vignettes<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+    <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">"stnava/surgeRy"</span>, build_vignettes<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+<p>this lets you access vignettes via:</p>
+<pre><code>vignette(package='surgeRy')</code></pre>
+<p>which will list the current vignettes.</p>
 </div>
 <div id="for-developers" class="section level2">
 <h2 class="hasAnchor">
@@ -123,6 +126,16 @@
 <h3 class="hasAnchor">
 <a href="#updating-documentation" class="anchor"></a>Updating documentation</h3>
 <p><code>$ make doc</code>. Requires the <a href="https://github.com/klutometis/roxygen">roxygen2</a> package.</p>
+</div>
+<div id="references-to-the-concepts-used-here" class="section level3">
+<h3 class="hasAnchor">
+<a href="#references-to-the-concepts-used-here" class="anchor"></a>References to the concepts used here</h3>
+<ul>
+<li><p>Cephalometric Landmark Regression with Convolutional Neural Networks on 3D Computed Tomography Data ( a review paper )</p></li>
+<li><p>Numerical Coordinate Regression with Convolutional Neural Networks</p></li>
+<li><p>Human pose regression by combining indirect part detection and contextual information (section 3.2)</p></li>
+<li><p>Automatic 3d cephalometric annotation system using shadowed 2d image-based machine learning</p></li>
+</ul>
 </div>
 </div>
 </div>

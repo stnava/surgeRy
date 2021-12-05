@@ -73,6 +73,30 @@ loadNPData <- function( numpynames ) {
 }
 
 
+
+#' Average numpy arrays from disk
+#'
+#' @param numpynames the names of the numpy on disk files to average
+#' @return the averaged arrays
+#' @author Avants BB
+#' @export
+averageNumpyArraysFromDisk <- function( numpynames ) {
+  np <- import("numpy")
+  numpynames = as.character( numpynames )
+  multiplier = 1.0 / length( numpynames )
+  for ( x in 1:length( numpynames ) ) {
+    if ( ! file.exists( numpynames[ x ] ) )
+      stop(paste(  numpynames[ x ],"does not exist on disk" ) )
+    if ( x == 1 ) {
+      averagedArray = np$load( numpynames[ x ] ) * multiplier
+    } else {
+      averagedArray = averagedArray + np$load( numpynames[ x ] ) * multiplier
+    }
+  }
+  return( averagedArray )
+}
+
+
 #' Generate segmentation-based augmentation data with on disk storage
 #'
 #' @param inputImageList list of lists of input images to warp.  The internal
