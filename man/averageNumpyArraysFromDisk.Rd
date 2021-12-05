@@ -4,10 +4,12 @@
 \alias{averageNumpyArraysFromDisk}
 \title{Average numpy arrays from disk}
 \usage{
-averageNumpyArraysFromDisk(numpynames)
+averageNumpyArraysFromDisk(numpynames, batchReduce = TRUE)
 }
 \arguments{
 \item{numpynames}{the names of the numpy on disk files to average}
+
+\item{batchReduce}{boolean to average over the rows at the end}
 }
 \value{
 the averaged arrays

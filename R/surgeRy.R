@@ -77,10 +77,11 @@ loadNPData <- function( numpynames ) {
 #' Average numpy arrays from disk
 #'
 #' @param numpynames the names of the numpy on disk files to average
+#' @param batchReduce boolean to average over the rows at the end
 #' @return the averaged arrays
 #' @author Avants BB
 #' @export
-averageNumpyArraysFromDisk <- function( numpynames ) {
+averageNumpyArraysFromDisk <- function( numpynames, batchReduce=TRUE ) {
   np <- import("numpy")
   numpynames = as.character( numpynames )
   multiplier = 1.0 / length( numpynames )
@@ -93,7 +94,27 @@ averageNumpyArraysFromDisk <- function( numpynames ) {
       averagedArray = averagedArray + np$load( numpynames[ x ] ) * multiplier
     }
   }
-  return( averagedArray )
+  if ( ! batchRedude ) return( averagedArray )
+  nrows = head( dim( averagedArray ), 1 )
+  if ( length(dim(myavg)) == 3 ) {
+    averagedArrayB = averagedArray[1,,]/nrows
+    if (nrows>1)
+      for ( jj in 2:nrows )
+        averagedArrayB = averagedArrayB + averagedArray[jj,,]/nrows
+  }
+  if ( length(dim(myavg)) == 4 ) {
+    averagedArrayB = averagedArray[1,,,]
+    if (nrows>1)
+      for ( jj in 2:nrows )
+        averagedArrayB = averagedArrayB + averagedArray[jj,,,]/nrows
+  }
+  if ( length(dim(myavg)) == 5 ) {
+    averagedArrayB = averagedArray[1,,,,]
+    if (nrows>1)
+      for ( jj in 2:nrows )
+        averagedArrayB = averagedArrayB + averagedArray[jj,,,,]/nrows
+  }
+  return( averagedArrayB )
 }
 
 
