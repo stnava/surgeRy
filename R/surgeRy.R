@@ -96,19 +96,19 @@ averageNumpyArraysFromDisk <- function( numpynames, batchReduce=TRUE ) {
   }
   if ( ! batchReduce ) return( averagedArray )
   nrows = head( dim( averagedArray ), 1 )
-  if ( length(dim(myavg)) == 3 ) {
+  if ( length(dim(averagedArray)) == 3 ) {
     averagedArrayB = averagedArray[1,,]/nrows
     if (nrows>1)
       for ( jj in 2:nrows )
         averagedArrayB = averagedArrayB + averagedArray[jj,,]/nrows
   }
-  if ( length(dim(myavg)) == 4 ) {
+  if ( length(dim(averagedArray)) == 4 ) {
     averagedArrayB = averagedArray[1,,,]
     if (nrows>1)
       for ( jj in 2:nrows )
         averagedArrayB = averagedArrayB + averagedArray[jj,,,]/nrows
   }
-  if ( length(dim(myavg)) == 5 ) {
+  if ( length(dim(averagedArray)) == 5 ) {
     averagedArrayB = averagedArray[1,,,,]
     if (nrows>1)
       for ( jj in 2:nrows )
