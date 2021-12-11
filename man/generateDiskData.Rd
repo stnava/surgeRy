@@ -11,7 +11,7 @@ generateDiskData(
   selector,
   addCoordConv = TRUE,
   segmentationsArePoints = FALSE,
-  maskIndex,
+  maskIndex = NULL,
   smoothHeatMaps = 0,
   numpynames,
   numberOfSimulations = 16,

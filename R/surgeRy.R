@@ -200,7 +200,7 @@ generateDiskData  <- function(
   selector,
   addCoordConv = TRUE,
   segmentationsArePoints = FALSE,
-  maskIndex,
+  maskIndex = NULL,
   smoothHeatMaps = 0,
   numpynames,
   numberOfSimulations = 16,
@@ -213,13 +213,13 @@ generateDiskData  <- function(
   sdAffine = 0.2  ) {
   nClasses = length( segmentationNumbers )
   overindices = 1:length(inputImageList[[1]])
-  if (  ! missing( maskIndex ) ) overindices = overindices[ -maskIndex ]
+  if (  ! is.null( maskIndex ) ) overindices = overindices[ -maskIndex ]
   np <- import("numpy")
   idim = dim( inputImageList[[1]][[1]] )
   myimgdim = length( idim )
   doMask = FALSE
   doCC = FALSE
-  if ( addCoordConv  & ! missing( maskIndex ) )
+  if ( addCoordConv  & ! is.null( maskIndex ) )
     stopifnot( length( numpynames ) > 3 )
 
   X = array( dim = c( numberOfSimulations, idim, length(overindices) ) )
@@ -234,7 +234,7 @@ generateDiskData  <- function(
       stop( "numpynames must have a name containing the string heatmap" )
     heatmapnameindex = grep("heatmap",numpynames)
   }
-  if (! missing( maskIndex ) ) {
+  if (! is.null( maskIndex ) ) {
     doMask = TRUE
     Xm = array( dim = c( numberOfSimulations, idim, 1 ) )
     stopifnot( length( numpynames ) > 2 )
@@ -271,7 +271,7 @@ generateDiskData  <- function(
         if ( myimgdim == 3 ) Xcc[k,,,,jj] = as.array( myccLocal[[jj]] )
       }
     }
-    if ( ! missing( maskIndex ) ) {
+    if ( ! is.null( maskIndex ) ) {
       mymask = thresholdImage( data$simulatedImages[[k]][[maskIndex]], 0.5, Inf )
       if ( myimgdim == 2 ) Xm[k,,,1] = as.array( mymask )
       if ( myimgdim == 3 ) Xm[k,,,,1] = as.array( mymask )
