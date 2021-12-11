@@ -480,7 +480,7 @@ generateDiskPointAndSegmentationData  <- function(
   segmentationImageList,
   segmentationNumbers,
   selector,
-  maskIndex,
+  maskIndex = NULL,
   smoothHeatMaps = 0,
   numpynames,
   cropping = NULL,
@@ -501,7 +501,7 @@ generateDiskPointAndSegmentationData  <- function(
   if ( hasSeg )
     nClasses = length( segmentationNumbers )
   overindices = 1:length(inputImageList[[1]])
-  if (  ! missing( maskIndex ) ) overindices = overindices[ -maskIndex ]
+  if (  ! is.null( maskIndex ) ) overindices = overindices[ -maskIndex ]
   np <- import("numpy")
   idim = dim( inputImageList[[1]][[1]] )
   myimgdim = length( idim )
@@ -525,7 +525,7 @@ generateDiskPointAndSegmentationData  <- function(
     stop( "numpynames must have a name containing the string pointset" )
   pointsetnameindex = grep("pointset",numpynames)
 
-  if ( addCoordConv  & ! missing( maskIndex ) )
+  if ( addCoordConv  & ! is.null( maskIndex ) )
     stopifnot( length( numpynames ) > 3 )
 
   X = array( dim = c( numberOfSimulations, idim, length(overindices) ) )
@@ -541,7 +541,7 @@ generateDiskPointAndSegmentationData  <- function(
     heatmapnameindex = grep("heatmap",numpynames)
     Yh = array( 0, dim = c( numberOfSimulations, idim, nPoints ) )
   }
-  if (! missing( maskIndex ) ) {
+  if (! is.null( maskIndex ) ) {
     doMask = TRUE
     if ( length( inputImageList[[1]] ) < maskIndex )
       stop("Did you pass the mask into the inputImageList?")
@@ -596,7 +596,7 @@ generateDiskPointAndSegmentationData  <- function(
       if ( myimgdim == 2 ) Xcc[k,,,jj] = as.array( myccLocal[[jj]] )
       if ( myimgdim == 3 ) Xcc[k,,,,jj] = as.array( myccLocal[[jj]] )
       }
-    if ( ! missing( maskIndex ) ) {
+    if ( ! is.null( maskIndex ) ) {
       mymask = thresholdImage( data$simulatedImages[[k]][[maskIndex]], 0.5, Inf )
       if ( doCrop )
         mymask = specialCrop( mymask,

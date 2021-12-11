@@ -10,7 +10,7 @@ generateDiskPointAndSegmentationData(
   segmentationImageList,
   segmentationNumbers,
   selector,
-  maskIndex,
+  maskIndex = NULL,
   smoothHeatMaps = 0,
   numpynames,
   cropping = NULL,
